@@ -38,6 +38,7 @@ pub fn get_editor(config: &Config, template: &Template, matches: &ArgMatches) ->
         editor = env::var("EDITOR").ok()
     }
 
+    // If editor is "", set editor to None
     if let Some(true) = editor.as_ref().map(|editor| editor.is_empty()) {
         editor = None
     }
@@ -52,6 +53,3 @@ pub fn get_shell() -> String {
     #[cfg(windows)]
     return "PowerShell.exe".to_string();
 }
-
-#[cfg(test)]
-mod tests {}

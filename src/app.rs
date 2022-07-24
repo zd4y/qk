@@ -1,10 +1,10 @@
 // use clap::{crate_authors, crate_name, crate_version, App, AppSettings, Arg, SubCommand};
-use clap::{crate_authors, crate_name, crate_version, App, AppSettings, Arg};
+use clap::{crate_name, crate_version, App, AppSettings, Arg};
 
 const USAGE: &str = "\
     qk [FLAGS] [OPTIONS] <template> <project> [extra-args]...
-    qk [OPTIONS] -l <template>
-    qk [OPTIONS] -t
+    qk [OPTIONS] -L <template>
+    qk [OPTIONS] -T
     qk --help
     qk --version
 ";
@@ -14,7 +14,6 @@ const OTHER_OPERATIONS: &[&str; 2] = &["list-projects", "list-templates"];
 
 pub fn app() -> App<'static, 'static> {
     App::new(crate_name!())
-        .author(crate_authors!())
         .version(crate_version!())
         .about("qk allows you to quickly create new projects using templates")
         .global_setting(AppSettings::DisableHelpSubcommand)
@@ -49,6 +48,7 @@ pub fn app() -> App<'static, 'static> {
             Arg::with_name("config")
                 .env("QK_CONFIG_PATH")
                 .empty_values(false)
+                .short("c")
                 .long("config")
                 .help("Specify alternative configuration file"),
         )
@@ -77,14 +77,16 @@ pub fn app() -> App<'static, 'static> {
         )
         .arg(
             Arg::with_name("list-projects")
-                .short("l")
+                .short("L")
+                .long("list-projects")
                 .conflicts_with_all(MAIN_OPERATION)
                 .conflicts_with("list-templates")
                 .help("List projects from the given template"),
         )
         .arg(
             Arg::with_name("list-templates")
-                .short("t")
+                .short("T")
+                .long("list-templates")
                 .conflicts_with("template")
                 .conflicts_with_all(MAIN_OPERATION)
                 .conflicts_with("list-projects")

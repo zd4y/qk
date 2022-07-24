@@ -1,6 +1,4 @@
-use crate::command;
-use crate::config::TemplateConfig;
-use crate::Command;
+use crate::{command, config::TemplateConfig, Command};
 
 use std::path::{Path, PathBuf};
 

@@ -10,14 +10,13 @@ use qk::utils;
 
 use std::process;
 
-use ansi_term::Color::Red;
 use anyhow::Context;
 use anyhow::{bail, Result};
 use clap::ArgMatches;
 
 fn main() -> Result<()> {
     if let Err(err) = run() {
-        eprintln!("{} {:?}", Red.bold().paint("error:"), err);
+        eprintln!("error: {:?}", err);
         process::exit(1);
     }
     Ok(())
@@ -30,13 +29,6 @@ fn run() -> Result<()> {
         None => Config::load(),
     }
     .context("failed loading config")?;
-
-    // match matches.subcommand() {
-    //     ("-l", Some(matches)) => handle_list_projects(&config, matches),
-    //     ("-t", None) => handle_list_templates(&config),
-    //     ("", None) => handle_main(&config, &matches),
-    //     _ => bail!("unknown subcommand"),
-    // }
 
     if matches.is_present("list-templates") {
         return handle_list_templates(&config);
@@ -56,7 +48,9 @@ fn handle_list_projects(config: &Config, matches: &ArgMatches) -> Result<()> {
         .find_template(template)
         .context("template not found")?;
 
-    let items = utils::list_dir(template.projects_dir).context("failed reading the project dir")?;
+    let mut items =
+        utils::list_dir(template.projects_dir).context("failed reading the project dir")?;
+    items.sort();
     if items.is_empty() {
         bail!("no projects yet")
     } else {
@@ -68,12 +62,19 @@ fn handle_list_projects(config: &Config, matches: &ArgMatches) -> Result<()> {
 
 /// Prints the templates in the config
 fn handle_list_templates(config: &Config) -> Result<()> {
-    let templates = config
+    let mut templates = config
         .templates()
         .keys()
-        .map(|x| x.to_string())
+        .map(|name| name.to_string())
         .collect::<Vec<_>>();
-    println!("{}", templates.join("\n"));
+    templates.sort();
+
+    if templates.is_empty() {
+        bail!("no templates yet")
+    } else {
+        println!("{}", templates.join("\n"));
+    }
+
     Ok(())
 }
 
@@ -89,7 +90,5 @@ fn handle_main_operation(config: &Config, matches: &ArgMatches) -> Result<()> {
     let editor = utils::get_editor(config, &template, matches);
     let overwrite = matches.is_present("overwrite");
 
-    Project::new(&template, project_name, extra_args, editor, overwrite).open_or_create()?;
-
-    Ok(())
+    Project::new(&template, project_name, extra_args, editor, overwrite).open_or_create()
 }

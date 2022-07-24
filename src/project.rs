@@ -1,8 +1,5 @@
-use crate::command::Unit;
-use crate::template::Template;
-use crate::utils;
+use crate::{command::Unit, template::Template, utils};
 
-use ansi_term::Color::White;
 use anyhow::{Context, Result};
 use clap::{App, Arg, ArgMatches, Values};
 
@@ -115,6 +112,7 @@ impl<'a> Project<'a> {
                     Arg::with_name(&unit.name)
                         .long(&unit.long)
                         .short(&unit.short)
+                        .takes_value(true)
                         .empty_values(unit.empty_values)
                         .required(unit.required),
                 ),
@@ -148,13 +146,11 @@ impl<'a> Project<'a> {
     fn run_cmd_str(&self, command: &str, shell: &str) -> Result<ExitStatus> {
         println!(
             "{}",
-            White.dimmed().paint(
-                command
-                    .lines()
-                    .map(|line| format!("$ {}", line))
-                    .collect::<Vec<String>>()
-                    .join("\n")
-            )
+            command
+                .lines()
+                .map(|line| format!("$ {}", line))
+                .collect::<Vec<String>>()
+                .join("\n")
         );
         Command::new(shell)
             .arg("-c")

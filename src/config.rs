@@ -37,12 +37,13 @@ impl Config {
 
     /// Loads the config from the system's config directory
     pub fn load() -> Result<Self> {
-        Ok(confy::load(crate_name!())?)
+        let name = crate_name!();
+        Ok(confy::load(name, name)?)
     }
 
-    /// Loads the config from the `path` directory
+    /// Loads the config from the `path` file
     pub fn load_from(path: impl AsRef<Path>) -> Result<Self> {
-        ensure!(path.as_ref().is_file(), "path is not a file");
+        ensure!(path.as_ref().is_file(), "config path is not a file");
         Ok(confy::load_path(path)?)
     }
 }
@@ -51,20 +52,16 @@ impl Default for Config {
     fn default() -> Self {
         let mut templates = HashMap::new();
         templates.insert(
-            String::from("example1"),
-            TemplateConfig::OnlyProjectsDir(String::from("/path/to/example1/")),
-        );
-        templates.insert(
-            String::from("example2"),
+            String::from("example"),
             TemplateConfig::Complete(Template {
-                projects_dir: PathBuf::from("/path/to/example2/"),
+                projects_dir: PathBuf::from("/path/to/example/"),
                 editor: Some(String::from("code")),
                 commands: vec![
                     String::from("echo hello"),
                     String::from("echo $PWD"),
                     String::from("echo $QK_PROJECT_NAME"),
                 ],
-                name: String::from("example2"),
+                name: String::from("example"),
             }),
         );
         Self {
