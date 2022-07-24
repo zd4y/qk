@@ -8,6 +8,14 @@ qk allows you to quickly start new projects using templates
 qk template project
 ```
 
+## Installation
+
+Using cargo:
+
+```
+cargo install --git https://github.com/zd4y/qk
+```
+
 ## Example
 
 Consider the following config:
