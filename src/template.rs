@@ -136,8 +136,8 @@ mod tests {
                     Unit::Text("echo yes: ".to_string()),
                     Unit::Flag(ClapFlag {
                         name: "yes".to_string(),
-                        long: "yes".to_string(),
-                        short: "y".to_string()
+                        long: Some("yes".to_string()),
+                        short: Some('y')
                     }),
                     Unit::Text(".".to_string()),
                 ]

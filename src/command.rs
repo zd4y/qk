@@ -22,8 +22,8 @@ pub struct ClapPositional {
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub struct ClapOption {
     pub name: String,
-    pub long: String,
-    pub short: String,
+    pub long: Option<String>,
+    pub short: Option<char>,
     pub empty_values: bool,
     pub required: bool,
     // multiple: bool
@@ -32,8 +32,8 @@ pub struct ClapOption {
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub struct ClapFlag {
     pub name: String,
-    pub long: String,
-    pub short: String,
+    pub long: Option<String>,
+    pub short: Option<char>,
 }
 
 pub fn parse(command: &str) -> Result<Command> {
@@ -166,6 +166,9 @@ fn match_custom_arg(input: &str) -> Result<(&str, Unit)> {
 
         let (next, _) = match_literal("}")(next)?;
 
+        let long = if long.is_empty() { None } else { Some(long) };
+        let short = short.chars().next();
+
         let arg = {
             if flag {
                 Unit::Flag(ClapFlag { name, long, short })
@@ -293,8 +296,8 @@ mod tests {
                 "",
                 Unit::Option(ClapOption {
                     empty_values: false,
-                    long: "hello".to_string(),
-                    short: "".to_string(),
+                    long: Some("hello".to_string()),
+                    short: None,
                     name: "hello".to_string(),
                     required: false
                 })
@@ -324,59 +327,59 @@ mod tests {
                 Unit::Text("cargo new $QK_PROJECT_NAME ".to_string()),
                 Unit::Flag(ClapFlag {
                     name: "lib".to_string(),
-                    long: "lib".to_string(),
-                    short: "".to_string(),
+                    long: Some("lib".to_string()),
+                    short: None,
                 })
             ]
         );
         assert_eq!(
-            parse("echo one #{one} two #{two!} three #{three*} four #{four!*} five #{five*!} six #{six?} seven #{1:seven!} eight #{2:eight!*} nine #{3:nine*!} ten #{4:ten} eleven #{5:eleven*} twelve #{twelve,t} thirteen #{thirteen,h!} fourteen #{fourteen,f*} fifteen #{fifteen,i*!} sixteen #{sixteen,s!*} seventeen #{seventeen,e?} eighteen #{,g} nineteen #{,n!} twenty #{,w*} twenty-one #{,y!*} twenty-two #{,o*!} twenty-three #{,ee?}").unwrap(),
+            parse("echo one #{one} two #{two!} three #{three*} four #{four!*} five #{five*!} six #{six?} seven #{1:seven!} eight #{2:eight!*} nine #{3:nine*!} ten #{4:ten} eleven #{5:eleven*} twelve #{twelve,t} thirteen #{thirteen,h!} fourteen #{fourteen,f*} fifteen #{fifteen,i*!} sixteen #{sixteen,s!*} seventeen #{seventeen,e?} eighteen #{,g} nineteen #{,n!} twenty #{,w*} twenty-one #{,y!*} twenty-two #{,o*!} twenty-three #{,x?}").unwrap(),
             vec![
                 Unit::Text("echo one ".to_string()),
                 Unit::Option(ClapOption {
                     name:"one".to_string(),
-                    long:"one".to_string(),
-                    short:"".to_string(),
+                    long:Some("one".to_string()),
+                    short:None,
                     empty_values: false,
                     required: false
                 }),
                 Unit::Text(" two ".to_string()),
                 Unit::Option(ClapOption {
                     name:"two".to_string(),
-                    long:"two".to_string(),
-                    short:"".to_string(),
+                    long:Some("two".to_string()),
+                    short:None,
                     empty_values: false,
                     required: true
                 }),
                 Unit::Text(" three ".to_string()),
                 Unit::Option(ClapOption {
                     name:"three".to_string(),
-                    long:"three".to_string(),
-                    short:"".to_string(),
+                    long:Some("three".to_string()),
+                    short:None,
                     empty_values: true,
                     required: false
                 }),
                 Unit::Text(" four ".to_string()),
                 Unit::Option(ClapOption {
                     name:"four".to_string(),
-                    long:"four".to_string(),
-                    short:"".to_string(),
+                    long:Some("four".to_string()),
+                    short:None,
                     empty_values: true,
                     required: true
                 }),
                 Unit::Text(" five ".to_string()),
                 Unit::Option(ClapOption {
                     name:"five".to_string(),
-                    long:"five".to_string(),
-                    short:"".to_string(),
+                    long:Some("five".to_string()),
+                    short:None,
                     empty_values: true,
                     required: true
                 }),
                 Unit::Text(" six ".to_string()),
                 Unit::Flag(ClapFlag {
                     name:"six".to_string(),
-                    long:"six".to_string(),
-                    short:"".to_string(),
+                    long:Some("six".to_string()),
+                    short:None,
                 }),
                 Unit::Text(" seven ".to_string()),
                 Unit::Positional(ClapPositional {
@@ -416,94 +419,94 @@ mod tests {
                 Unit::Text(" twelve ".to_string()),
                 Unit::Option(ClapOption {
                     name:"twelve".to_string(),
-                    long: "twelve".to_string(),
-                    short: "t".to_string(),
+                    long: Some("twelve".to_string()),
+                    short: Some('t'),
                     empty_values:false,
                     required:false,
                 }),
                 Unit::Text(" thirteen ".to_string()),
                 Unit::Option(ClapOption {
                     name:"thirteen".to_string(),
-                    long: "thirteen".to_string(),
-                    short: "h".to_string(),
+                    long: Some("thirteen".to_string()),
+                    short: Some('h'),
                     empty_values:false,
                     required:true,
                 }),
                 Unit::Text(" fourteen ".to_string()),
                 Unit::Option(ClapOption {
                     name:"fourteen".to_string(),
-                    long: "fourteen".to_string(),
-                    short: "f".to_string(),
+                    long: Some("fourteen".to_string()),
+                    short: Some('f'),
                     empty_values:true,
                     required:false,
                 }),
                 Unit::Text(" fifteen ".to_string()),
                 Unit::Option(ClapOption {
                     name:"fifteen".to_string(),
-                    long: "fifteen".to_string(),
-                    short: "i".to_string(),
+                    long: Some("fifteen".to_string()),
+                    short: Some('i'),
                     empty_values:true,
                     required:true,
                 }),
                 Unit::Text(" sixteen ".to_string()),
                 Unit::Option(ClapOption {
                     name:"sixteen".to_string(),
-                    long: "sixteen".to_string(),
-                    short: "s".to_string(),
+                    long: Some("sixteen".to_string()),
+                    short: Some('s'),
                     empty_values:true,
                     required:true,
                 }),
                 Unit::Text(" seventeen ".to_string()),
                 Unit::Flag(ClapFlag {
                     name:"seventeen".to_string(),
-                    long: "seventeen".to_string(),
-                    short: "e".to_string(),
+                    long: Some("seventeen".to_string()),
+                    short: Some('e'),
                 }),
                 Unit::Text(" eighteen ".to_string()),
                 Unit::Option(ClapOption {
                     name:"g".to_string(),
-                    long: "".to_string(),
-                    short: "g".to_string(),
+                    long: None,
+                    short: Some('g'),
                     empty_values:false,
                     required:false,
                 }),
                 Unit::Text(" nineteen ".to_string()),
                 Unit::Option(ClapOption {
                     name:"n".to_string(),
-                    long: "".to_string(),
-                    short: "n".to_string(),
+                    long: None,
+                    short: Some('n'),
                     empty_values:false,
                     required:true,
                 }),
                 Unit::Text(" twenty ".to_string()),
                 Unit::Option(ClapOption {
                     name:"w".to_string(),
-                    long: "".to_string(),
-                    short: "w".to_string(),
+                    long: None,
+                    short: Some('w'),
                     empty_values:true,
                     required:false,
                 }),
                 Unit::Text(" twenty-one ".to_string()),
                 Unit::Option(ClapOption {
                     name:"y".to_string(),
-                    long: "".to_string(),
-                    short: "y".to_string(),
+                    long: None,
+                    short: Some('y'),
                     empty_values:true,
                     required:true,
                 }),
                 Unit::Text(" twenty-two ".to_string()),
                 Unit::Option(ClapOption {
                     name:"o".to_string(),
-                    long: "".to_string(),
-                    short: "o".to_string(),
+                    long: None,
+                    short: Some('o'),
                     empty_values:true,
                     required:true,
                 }),
                 Unit::Text(" twenty-three ".to_string()),
                 Unit::Flag(ClapFlag {
-                    name:"ee".to_string(),
-                    long: "".to_string(),
-                    short: "ee".to_string(),
+                    name:"x".to_string(),
+                    long: None,
+                    short: Some('x'),
                 }),
             ]
         );
@@ -589,9 +592,9 @@ mod tests {
                 "",
                 Unit::Option(ClapOption {
                     empty_values: false,
-                    long: "color".to_string(),
+                    long: Some("color".to_string()),
                     name: "color".to_string(),
-                    short: "".to_string(),
+                    short: None,
                     required: false
                 })
             )
@@ -618,9 +621,9 @@ mod tests {
                 "",
                 Unit::Option(ClapOption {
                     empty_values: false,
-                    long: "1color".to_string(),
+                    long: Some("1color".to_string()),
                     name: "1color".to_string(),
-                    short: "".to_string(),
+                    short: None,
                     required: false
                 })
             )

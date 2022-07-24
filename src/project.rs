@@ -108,19 +108,29 @@ impl<'a> Project<'a> {
                         .required(unit.required)
                         .index(unit.index),
                 ),
-                Unit::Option(unit) => Some(
-                    Arg::with_name(&unit.name)
-                        .long(&unit.long)
-                        .short(&unit.short)
+                Unit::Option(unit) => {
+                    let mut arg = Arg::with_name(&unit.name)
                         .takes_value(true)
                         .empty_values(unit.empty_values)
-                        .required(unit.required),
-                ),
-                Unit::Flag(unit) => Some(
-                    Arg::with_name(&unit.name)
-                        .long(&unit.long)
-                        .short(&unit.short),
-                ),
+                        .required(unit.required);
+                    if let Some(long) = &unit.long {
+                        arg = arg.long(long);
+                    }
+                    if let Some(short) = unit.short {
+                        arg = arg.short(short.to_string())
+                    }
+                    Some(arg)},
+                Unit::Flag(unit) => {
+                    let mut arg = Arg::with_name(&unit.name);
+
+                    if let Some(long) = &unit.long {
+                        arg = arg.long(long);
+                    }
+                    if let Some(short) = unit.short {
+                        arg = arg.short(short.to_string())
+                    }
+                    Some(arg)
+                },
                 _ => None,
             })
             .collect()
@@ -133,7 +143,7 @@ impl<'a> Project<'a> {
             Unit::Option(unit) => matches.value_of(&unit.name).map(str::to_owned),
             Unit::Flag(unit) => {
                 if matches.is_present(&unit.name) {
-                    let prefix = if unit.long.is_empty() { "-" } else { "--" };
+                    let prefix = if unit.long.is_none() { "-" } else { "--" };
                     let unit = format!("{}{}", prefix, unit.name);
                     Some(unit)
                 } else {
