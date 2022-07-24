@@ -83,7 +83,7 @@ And finally, there is another thing in the command that we haven't addressed
 yet: `#{lib?}`. This is a custom argument, `lib` is the name of the argument
 and `?` means it is a flag; so if you use `qk rs myproject -- --lib`, the
 command executed will look like this: `cargo new myproject --lib`. The `--`
-before the custom argument is required for custom arguments that start with `-`.
+before the custom argument is required for arguments that start with `-`.
 
 ## Custom arguments
 

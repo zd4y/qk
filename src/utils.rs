@@ -20,7 +20,7 @@ pub fn list_dir(dir: impl AsRef<Path>) -> Result<Vec<String>> {
 }
 
 pub fn get_editor(config: &Config, template: &Template, matches: &ArgMatches) -> Option<String> {
-    let mut editor = matches.value_of("editor").map(str::to_owned);
+    let mut editor = matches.get_one("editor").cloned();
 
     if editor.is_none() {
         editor = template.editor.clone();

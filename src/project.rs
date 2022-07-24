@@ -1,7 +1,8 @@
 use crate::{command::Unit, template::Template, utils};
 
 use anyhow::{Context, Result};
-use clap::{App, Arg, ArgMatches, Values};
+use clap::parser::ValuesRef;
+use clap::{Arg, ArgMatches};
 
 use std::collections::HashSet;
 use std::fs;
@@ -13,7 +14,7 @@ pub struct Project<'a> {
     template: &'a Template,
     name: &'a str,
     dir: PathBuf,
-    extra_args: Values<'a>,
+    custom_args: ValuesRef<'a, String>,
     editor: Option<String>,
     overwrite: bool,
 }
@@ -22,7 +23,7 @@ impl<'a> Project<'a> {
     pub fn new(
         template: &'a Template,
         name: &'a str,
-        extra_args: Values<'a>,
+        custom_args: ValuesRef<'a, String>,
         editor: Option<String>,
         overwrite: bool,
     ) -> Self {
@@ -30,7 +31,7 @@ impl<'a> Project<'a> {
             template,
             name,
             dir: template.projects_dir.join(name),
-            extra_args,
+            custom_args,
             overwrite,
             editor,
         }
@@ -74,9 +75,9 @@ impl<'a> Project<'a> {
         let set_commands: HashSet<Unit> = parsed_commands.iter().flatten().cloned().collect();
         let clap_args = self.get_clap_args(&set_commands);
         let matches = self
-            .get_app()
+            .get_cmd()
             .args(&clap_args)
-            .get_matches_from(self.extra_args.clone());
+            .get_matches_from(self.custom_args.clone());
 
         let mut commands = Vec::new();
 
@@ -92,45 +93,50 @@ impl<'a> Project<'a> {
         Ok(commands)
     }
 
-    fn get_app(&self) -> App {
-        App::new(&self.template.name)
-            .setting(clap::AppSettings::NoBinaryName)
-            .setting(clap::AppSettings::DisableVersion)
+    fn get_cmd(&self) -> clap::Command {
+        clap::Command::new(&self.template.name)
+            .no_binary_name(true)
+            .disable_version_flag(true)
     }
 
-    fn get_clap_args<'b>(&self, commands: &'b HashSet<Unit>) -> Vec<Arg<'b, 'b>> {
+    fn get_clap_args<'b>(&self, commands: &'b HashSet<Unit>) -> Vec<Arg<'b>> {
         commands
             .iter()
             .filter_map(|arg| match arg {
-                Unit::Positional(unit) => Some(
-                    Arg::with_name(&unit.name)
-                        .empty_values(unit.empty_values)
+                Unit::Positional(unit) => {
+                    let mut arg = Arg::new(&*unit.name)
                         .required(unit.required)
-                        .index(unit.index),
-                ),
-                Unit::Option(unit) => {
-                    let mut arg = Arg::with_name(&unit.name)
-                        .takes_value(true)
-                        .empty_values(unit.empty_values)
-                        .required(unit.required);
-                    if let Some(long) = &unit.long {
-                        arg = arg.long(long);
-                    }
-                    if let Some(short) = unit.short {
-                        arg = arg.short(short.to_string())
-                    }
-                    Some(arg)},
-                Unit::Flag(unit) => {
-                    let mut arg = Arg::with_name(&unit.name);
-
-                    if let Some(long) = &unit.long {
-                        arg = arg.long(long);
-                    }
-                    if let Some(short) = unit.short {
-                        arg = arg.short(short.to_string())
+                        .index(unit.index);
+                    if !unit.empty_values {
+                        arg = arg.value_parser(clap::builder::NonEmptyStringValueParser::new())
                     }
                     Some(arg)
-                },
+                }
+                Unit::Option(unit) => {
+                    let mut arg = Arg::new(&*unit.name)
+                        .takes_value(true)
+                        .required(unit.required);
+                    if !unit.empty_values {
+                        arg = arg.value_parser(clap::builder::NonEmptyStringValueParser::new())
+                    }
+                    if let Some(long) = &unit.long {
+                        arg = arg.long(long);
+                    }
+                    if let Some(short) = unit.short {
+                        arg = arg.short(short)
+                    }
+                    Some(arg)
+                }
+                Unit::Flag(unit) => {
+                    let mut arg = Arg::new(&*unit.name).action(clap::ArgAction::SetTrue);
+                    if let Some(long) = &unit.long {
+                        arg = arg.long(long);
+                    }
+                    if let Some(short) = unit.short {
+                        arg = arg.short(short)
+                    }
+                    Some(arg)
+                }
                 _ => None,
             })
             .collect()
@@ -139,10 +145,10 @@ impl<'a> Project<'a> {
     fn unit_to_string(&self, unit: &Unit, matches: &ArgMatches) -> Option<String> {
         match unit {
             Unit::Text(unit) => Some(unit.to_owned()),
-            Unit::Positional(unit) => matches.value_of(&unit.name).map(str::to_owned),
-            Unit::Option(unit) => matches.value_of(&unit.name).map(str::to_owned),
+            Unit::Positional(unit) => matches.get_one::<String>(&unit.name).cloned(),
+            Unit::Option(unit) => matches.get_one::<String>(&unit.name).cloned(),
             Unit::Flag(unit) => {
-                if matches.is_present(&unit.name) {
+                if *matches.get_one::<bool>(&unit.name).unwrap() {
                     let prefix = if unit.long.is_none() { "-" } else { "--" };
                     let unit = format!("{}{}", prefix, unit.name);
                     Some(unit)

@@ -2,7 +2,7 @@
 //!
 //! Use `qk --help` for more information
 
-mod app;
+mod cmd;
 
 use qk::config::Config;
 use qk::project::Project;
@@ -23,18 +23,18 @@ fn main() -> Result<()> {
 }
 
 fn run() -> Result<()> {
-    let matches = app::app().get_matches();
-    let config = match matches.value_of("config") {
+    let matches = cmd::cmd().get_matches();
+    let config = match matches.get_one::<String>("config") {
         Some(path) => Config::load_from(path),
         None => Config::load(),
     }
     .context("failed loading config")?;
 
-    if matches.is_present("list-templates") {
+    if *matches.get_one::<bool>("list-templates").unwrap() {
         return handle_list_templates(&config);
     }
 
-    if matches.is_present("list-projects") {
+    if *matches.get_one::<bool>("list-projects").unwrap() {
         return handle_list_projects(&config, &matches);
     }
 
@@ -43,7 +43,7 @@ fn run() -> Result<()> {
 
 /// Prints the projects from a template
 fn handle_list_projects(config: &Config, matches: &ArgMatches) -> Result<()> {
-    let template = matches.value_of("template").unwrap();
+    let template = matches.get_one::<String>("template").unwrap();
     let template = config
         .find_template(template)
         .context("template not found")?;
@@ -80,15 +80,15 @@ fn handle_list_templates(config: &Config) -> Result<()> {
 
 /// Creates a new project
 fn handle_main_operation(config: &Config, matches: &ArgMatches) -> Result<()> {
-    let template = matches.value_of("template").unwrap();
+    let template = matches.get_one::<String>("template").unwrap();
     let template = config
         .find_template(template)
         .context("template not found")?;
 
-    let project_name = matches.value_of("project").unwrap();
-    let extra_args = matches.values_of("extra-args").unwrap_or_default();
+    let project_name = matches.get_one::<String>("project").unwrap();
+    let custom_args = matches.get_many("custom-args").unwrap_or_default();
     let editor = utils::get_editor(config, &template, matches);
-    let overwrite = matches.is_present("overwrite");
+    let overwrite = *matches.get_one::<bool>("overwrite").unwrap();
 
-    Project::new(&template, project_name, extra_args, editor, overwrite).open_or_create()
+    Project::new(&template, project_name, custom_args, editor, overwrite).open_or_create()
 }

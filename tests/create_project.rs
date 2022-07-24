@@ -52,6 +52,60 @@ $ echo hello > $QK_PROJECT_DIR/hello.txt
 }
 
 #[test]
+fn test_create_project_overwrite() {
+    let temp = assert_fs::TempDir::new().unwrap();
+    let config_file = temp.child("qk.toml");
+    let config_path = config_file.path();
+
+    let projects_dir = temp.child("projects");
+    let projects_dir_path = projects_dir.path();
+    let one_dir = projects_dir.child("one");
+    one_dir
+        .child("something.txt")
+        .write_str("something here")
+        .unwrap();
+
+    fs::write(
+        config_path,
+        format!(
+            "\
+            editor = 'echo'
+
+            [templates.example]
+            projects_dir = '{}'
+            commands = [
+                'mkdir $QK_PROJECT_DIR',
+                'echo hello > $QK_PROJECT_DIR/hello.txt'
+            ]
+        ",
+            projects_dir_path.to_string_lossy()
+        ),
+    )
+    .unwrap();
+    let mut cmd = Command::cargo_bin("qk").unwrap();
+    cmd.env("QK_CONFIG_PATH", config_path)
+        .arg("example")
+        .arg("one")
+        .arg("--overwrite")
+        .assert()
+        .success()
+        .stdout(format!(
+            "\
+$ mkdir $QK_PROJECT_DIR
+$ echo hello > $QK_PROJECT_DIR/hello.txt
+{path}/one
+",
+            path = projects_dir_path.to_string_lossy()
+        ))
+        .stderr("");
+    projects_dir
+        .child("one")
+        .child("hello.txt")
+        .assert("hello\n");
+    assert!(!projects_dir.child("one").child("something.txt").exists());
+}
+
+#[test]
 fn test_create_project_custom_args_positional_required() {
     let temp = assert_fs::TempDir::new().unwrap();
     let config_file = temp.child("qk.toml");
@@ -248,7 +302,7 @@ fn test_create_project_custom_args_positional_optional_missing() {
 }
 
 #[test]
-fn test_create_project_custom_args_positional_empty_values() {
+fn test_create_project_custom_args_positional_empty_values_allowed() {
     let temp = assert_fs::TempDir::new().unwrap();
     let config_file = temp.child("qk.toml");
     let config_path = config_file.path();
@@ -290,6 +344,50 @@ Doe
             projects_dir_path.to_string_lossy()
         ))
         .stderr("");
+}
+
+#[test]
+fn test_create_project_custom_args_positional_empty_values_not_allowed() {
+    let temp = assert_fs::TempDir::new().unwrap();
+    let config_file = temp.child("qk.toml");
+    let config_path = config_file.path();
+
+    let projects_dir = temp.child("example");
+    projects_dir.create_dir_all().unwrap();
+    let projects_dir_path = projects_dir.path();
+
+    fs::write(
+        config_path,
+        format!(
+            "\
+            [templates.example]
+            projects_dir = '{}'
+            commands = [
+                'echo #{{1:name!*}} #{{2:lastname!}}'
+            ]
+        ",
+            projects_dir_path.to_string_lossy()
+        ),
+    )
+    .unwrap();
+    let mut cmd = Command::cargo_bin("qk").unwrap();
+    cmd.env("QK_CONFIG_PATH", config_path)
+        .env_remove("VISUAL")
+        .env("EDITOR", "echo")
+        .arg("example")
+        .arg("project1")
+        .arg("John")
+        .arg("")
+        .assert()
+        .failure()
+        .stdout("")
+        .stderr(
+            "\
+error: The argument '<lastname>' requires a value but none was supplied
+
+For more information try --help
+",
+        );
 }
 
 #[test]
@@ -366,7 +464,7 @@ error: The following required arguments were not provided:
     --string <string>
 
 USAGE:
-     --string <string>
+    --string <string>
 
 For more information try --help
 ",

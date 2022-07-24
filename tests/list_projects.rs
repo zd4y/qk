@@ -10,10 +10,9 @@ fn test_list_projects_short_flag_missing_template_arg() {
         "\
 error: The following required arguments were not provided:
     <template>
-    <project>
 
 USAGE:
-    qk [FLAGS] [OPTIONS] <template> <project> [extra-args]...
+    qk [OPTIONS] <template> <project> [custom-args]...
     qk [OPTIONS] -L <template>
     qk [OPTIONS] -T
     qk --help

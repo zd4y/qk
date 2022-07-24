@@ -15,7 +15,7 @@ pub struct ClapPositional {
     pub name: String,
     pub empty_values: bool,
     pub required: bool,
-    pub index: u64,
+    pub index: usize,
     // multiple: bool
 }
 
@@ -91,27 +91,27 @@ fn match_simple_args(input: &str) -> (&str, &str) {
     ("", input)
 }
 
-fn match_u64(input: &str) -> Result<(&str, u64)> {
+fn match_usize(input: &str) -> Result<(&str, usize)> {
     let mut number_str = String::new();
     for (index, c) in input.chars().enumerate() {
         if c.is_numeric() {
             number_str.push(c);
         } else if number_str.is_empty() {
-            bail!("expecting u64 number, found {:?}", input);
+            bail!("expecting usize number, found {:?}", input);
         } else {
             return Ok((
                 &input[index..],
-                number_str.parse().context("failed parsing u64 number")?,
+                number_str.parse().context("failed parsing usize number")?,
             ));
         }
     }
-    bail!("expecting u64 number, found {:?}", input);
+    bail!("expecting usize number, found {:?}", input);
 }
 
 /// Matches <u64>:
 /// Example: `1:`
-fn match_num(input: &str) -> Result<(&str, u64)> {
-    let (next, num) = match_u64(input)?;
+fn match_num(input: &str) -> Result<(&str, usize)> {
+    let (next, num) = match_usize(input)?;
     let (next, _) = match_literal(":")(next)?;
     Ok((next, num))
 }
