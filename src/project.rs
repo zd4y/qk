@@ -1,4 +1,4 @@
-use crate::{command::Unit, template::Template, utils};
+use crate::{commands_parser::Unit, template::Template, utils};
 
 use anyhow::{Context, Result};
 use clap::parser::ValuesRef;
@@ -107,7 +107,7 @@ impl<'a> Project<'a> {
                     let mut arg = Arg::new(&*unit.name)
                         .required(unit.required)
                         .index(unit.index);
-                    if !unit.empty_values {
+                    if !unit.allow_empty_values {
                         arg = arg.value_parser(clap::builder::NonEmptyStringValueParser::new())
                     }
                     Some(arg)
@@ -116,7 +116,7 @@ impl<'a> Project<'a> {
                     let mut arg = Arg::new(&*unit.name)
                         .takes_value(true)
                         .required(unit.required);
-                    if !unit.empty_values {
+                    if !unit.allow_empty_values {
                         arg = arg.value_parser(clap::builder::NonEmptyStringValueParser::new())
                     }
                     if let Some(long) = &unit.long {

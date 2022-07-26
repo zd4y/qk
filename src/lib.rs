@@ -1,9 +1,9 @@
-pub mod command;
+pub mod commands_parser;
 pub mod config;
 pub mod project;
 pub mod template;
 pub mod utils;
 
-use command::Command;
+use commands_parser::Command;
 use config::Config;
 use template::Template;

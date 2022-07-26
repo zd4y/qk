@@ -13,7 +13,7 @@ pub enum Unit {
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub struct ClapPositional {
     pub name: String,
-    pub empty_values: bool,
+    pub allow_empty_values: bool,
     pub required: bool,
     pub index: usize,
 }
@@ -23,7 +23,7 @@ pub struct ClapOption {
     pub name: String,
     pub long: Option<String>,
     pub short: Option<char>,
-    pub empty_values: bool,
+    pub allow_empty_values: bool,
     pub required: bool,
 }
 
@@ -80,7 +80,7 @@ fn match_symbol(input: &str) -> Result<(&str, char), &str> {
 }
 
 /// Returns the input until: `#{`, `{{` or `\`
-fn match_simple_args(input: &str) -> (&str, &str) {
+fn match_until_custom_arg_start(input: &str) -> (&str, &str) {
     for (index, c) in input.chars().enumerate() {
         if c == '\\' || ((c == '#' || c == '{') && input.get(index + 1..index + 2) == Some("{")) {
             return (&input[index..], &input[..index]);
@@ -116,8 +116,8 @@ fn match_num(input: &str) -> Result<(&str, usize)> {
 
 fn match_custom_arg(input: &str) -> Result<(&str, Unit)> {
     if let Ok((next, _)) = match_literal("\\#{")(input) {
-        let (next, args) = match_simple_args(next);
-        Ok((next, Unit::Text(format!("#{{{}", args))))
+        let (next, text) = match_until_custom_arg_start(next);
+        Ok((next, Unit::Text(format!("#{{{}", text))))
     } else {
         let (next, _) = match_literal("#{")(input)?;
         let (next, index) = match match_num(next) {
@@ -137,7 +137,7 @@ fn match_custom_arg(input: &str) -> Result<(&str, Unit)> {
         } else {
             long.clone()
         };
-        let mut empty_values = false;
+        let mut allow_empty_values = false;
         let mut required = false;
         let mut flag = false;
 
@@ -149,13 +149,13 @@ fn match_custom_arg(input: &str) -> Result<(&str, Unit)> {
                 }
                 '?' => {
                     ensure!(!required, "incompatible symbols: `?` and `!`");
-                    ensure!(!empty_values, "incompatible symbols: `?` and `*`");
+                    ensure!(!allow_empty_values, "incompatible symbols: `?` and `*`");
                     ensure!(index.is_none(), "incompatible symbols: `?` and `<num>:`");
                     flag = true;
                 }
                 '*' => {
                     ensure!(!flag, "incompatible symbols: `*` and `?`");
-                    empty_values = true;
+                    allow_empty_values = true;
                 }
                 _ => unreachable!(),
             };
@@ -173,7 +173,7 @@ fn match_custom_arg(input: &str) -> Result<(&str, Unit)> {
             } else if let Some(index) = index {
                 Unit::Positional(ClapPositional {
                     name,
-                    empty_values,
+                    allow_empty_values,
                     required,
                     index,
                 })
@@ -182,7 +182,7 @@ fn match_custom_arg(input: &str) -> Result<(&str, Unit)> {
                     name,
                     long,
                     short,
-                    empty_values,
+                    allow_empty_values,
                     required,
                 })
             }
@@ -193,16 +193,16 @@ fn match_custom_arg(input: &str) -> Result<(&str, Unit)> {
 }
 
 fn match_unit(input: &str) -> Result<(&str, Unit)> {
-    let (next, args) = match_simple_args(input);
+    let (next, text) = match_until_custom_arg_start(input);
 
-    if args.is_empty() {
+    if text.is_empty() {
         if let Ok((next, _)) = match_literal("\\\\")(next) {
             Ok((next, Unit::Text("\\".to_string())))
         } else {
             match_custom_arg(next)
         }
     } else {
-        let unit = Unit::Text(args.to_string());
+        let unit = Unit::Text(text.to_string());
         Ok((next, unit))
     }
 }
@@ -225,8 +225,14 @@ mod tests {
     #[test]
     fn test_match_unit_error() {
         assert!(match_unit("").is_err());
-        assert_eq!(match_unit("\\hello").map_err(|err| err.to_string()), Err("expected literal #{".to_string()));
-        assert_eq!(match_unit("\\").map_err(|err| err.to_string()), Err("expected literal #{".to_string()));
+        assert_eq!(
+            match_unit("\\hello").map_err(|err| err.to_string()),
+            Err("expected literal #{".to_string())
+        );
+        assert_eq!(
+            match_unit("\\").map_err(|err| err.to_string()),
+            Err("expected literal #{".to_string())
+        );
     }
 
     #[test]
@@ -244,7 +250,7 @@ mod tests {
             (
                 "",
                 Unit::Option(ClapOption {
-                    empty_values: false,
+                    allow_empty_values: false,
                     long: Some("hello".to_string()),
                     short: None,
                     name: "hello".to_string(),
@@ -287,7 +293,7 @@ mod tests {
                     name:"one".to_string(),
                     long:Some("one".to_string()),
                     short:None,
-                    empty_values: false,
+                    allow_empty_values: false,
                     required: false
                 }),
                 Unit::Text(" two ".to_string()),
@@ -295,7 +301,7 @@ mod tests {
                     name:"two".to_string(),
                     long:Some("two".to_string()),
                     short:None,
-                    empty_values: false,
+                    allow_empty_values: false,
                     required: true
                 }),
                 Unit::Text(" three ".to_string()),
@@ -303,7 +309,7 @@ mod tests {
                     name:"three".to_string(),
                     long:Some("three".to_string()),
                     short:None,
-                    empty_values: true,
+                    allow_empty_values: true,
                     required: false
                 }),
                 Unit::Text(" four ".to_string()),
@@ -311,7 +317,7 @@ mod tests {
                     name:"four".to_string(),
                     long:Some("four".to_string()),
                     short:None,
-                    empty_values: true,
+                    allow_empty_values: true,
                     required: true
                 }),
                 Unit::Text(" five ".to_string()),
@@ -319,7 +325,7 @@ mod tests {
                     name:"five".to_string(),
                     long:Some("five".to_string()),
                     short:None,
-                    empty_values: true,
+                    allow_empty_values: true,
                     required: true
                 }),
                 Unit::Text(" six ".to_string()),
@@ -331,35 +337,35 @@ mod tests {
                 Unit::Text(" seven ".to_string()),
                 Unit::Positional(ClapPositional {
                     name:"seven".to_string(),
-                    empty_values:false,
+                    allow_empty_values:false,
                     required:true,
                     index: 1
                 }),
                 Unit::Text(" eight ".to_string()),
                 Unit::Positional(ClapPositional {
                     name:"eight".to_string(),
-                    empty_values:true,
+                    allow_empty_values:true,
                     required:true,
                     index: 2
                 }),
                 Unit::Text(" nine ".to_string()),
                 Unit::Positional(ClapPositional {
                     name:"nine".to_string(),
-                    empty_values:true,
+                    allow_empty_values:true,
                     required:true,
                     index: 3
                 }),
                 Unit::Text(" ten ".to_string()),
                 Unit::Positional(ClapPositional {
                     name:"ten".to_string(),
-                    empty_values:false,
+                    allow_empty_values:false,
                     required:false,
                     index: 4
                 }),
                 Unit::Text(" eleven ".to_string()),
                 Unit::Positional(ClapPositional {
                     name:"eleven".to_string(),
-                    empty_values:true,
+                    allow_empty_values:true,
                     required:false,
                     index: 5
                 }),
@@ -368,7 +374,7 @@ mod tests {
                     name:"twelve".to_string(),
                     long: Some("twelve".to_string()),
                     short: Some('t'),
-                    empty_values:false,
+                    allow_empty_values:false,
                     required:false,
                 }),
                 Unit::Text(" thirteen ".to_string()),
@@ -376,7 +382,7 @@ mod tests {
                     name:"thirteen".to_string(),
                     long: Some("thirteen".to_string()),
                     short: Some('h'),
-                    empty_values:false,
+                    allow_empty_values:false,
                     required:true,
                 }),
                 Unit::Text(" fourteen ".to_string()),
@@ -384,7 +390,7 @@ mod tests {
                     name:"fourteen".to_string(),
                     long: Some("fourteen".to_string()),
                     short: Some('f'),
-                    empty_values:true,
+                    allow_empty_values:true,
                     required:false,
                 }),
                 Unit::Text(" fifteen ".to_string()),
@@ -392,7 +398,7 @@ mod tests {
                     name:"fifteen".to_string(),
                     long: Some("fifteen".to_string()),
                     short: Some('i'),
-                    empty_values:true,
+                    allow_empty_values:true,
                     required:true,
                 }),
                 Unit::Text(" sixteen ".to_string()),
@@ -400,7 +406,7 @@ mod tests {
                     name:"sixteen".to_string(),
                     long: Some("sixteen".to_string()),
                     short: Some('s'),
-                    empty_values:true,
+                    allow_empty_values:true,
                     required:true,
                 }),
                 Unit::Text(" seventeen ".to_string()),
@@ -414,7 +420,7 @@ mod tests {
                     name:"g".to_string(),
                     long: None,
                     short: Some('g'),
-                    empty_values:false,
+                    allow_empty_values:false,
                     required:false,
                 }),
                 Unit::Text(" nineteen ".to_string()),
@@ -422,7 +428,7 @@ mod tests {
                     name:"n".to_string(),
                     long: None,
                     short: Some('n'),
-                    empty_values:false,
+                    allow_empty_values:false,
                     required:true,
                 }),
                 Unit::Text(" twenty ".to_string()),
@@ -430,7 +436,7 @@ mod tests {
                     name:"w".to_string(),
                     long: None,
                     short: Some('w'),
-                    empty_values:true,
+                    allow_empty_values:true,
                     required:false,
                 }),
                 Unit::Text(" twenty-one ".to_string()),
@@ -438,7 +444,7 @@ mod tests {
                     name:"y".to_string(),
                     long: None,
                     short: Some('y'),
-                    empty_values:true,
+                    allow_empty_values:true,
                     required:true,
                 }),
                 Unit::Text(" twenty-two ".to_string()),
@@ -446,7 +452,7 @@ mod tests {
                     name:"o".to_string(),
                     long: None,
                     short: Some('o'),
-                    empty_values:true,
+                    allow_empty_values:true,
                     required:true,
                 }),
                 Unit::Text(" twenty-three ".to_string()),
@@ -478,7 +484,7 @@ mod tests {
     #[test]
     fn test_match_simple_args_multi_line() {
         assert_eq!(
-            match_simple_args("echo one\necho two\necho three"),
+            match_until_custom_arg_start("echo one\necho two\necho three"),
             ("", "echo one\necho two\necho three")
         )
     }
@@ -492,14 +498,14 @@ mod tests {
                 Unit::Positional(ClapPositional {
                     name: "first".to_string(),
                     required: true,
-                    empty_values: false,
+                    allow_empty_values: false,
                     index: 1
                 }),
                 Unit::Text(" and my last name is ".to_string()),
                 Unit::Positional(ClapPositional {
                     name: "last".to_string(),
                     required: true,
-                    empty_values: false,
+                    allow_empty_values: false,
                     index: 2
                 }),
                 Unit::Text(".".to_string()),
@@ -509,24 +515,54 @@ mod tests {
 
     #[test]
     fn test_match_simple_args() {
-        assert_eq!(match_simple_args("hello world"), ("", "hello world"));
-        assert_eq!(match_simple_args("hello #{world."), ("#{world.", "hello "));
-        assert_eq!(match_simple_args("#{hello"), ("#{hello", ""));
-        assert_eq!(match_simple_args("hello #world"), ("", "hello #world"));
-        assert_eq!(match_simple_args("hello {world"), ("", "hello {world"));
-        assert_eq!(match_simple_args("{{hello"), ("{{hello", ""));
-        assert_eq!(match_simple_args("{{hello world"), ("{{hello world", ""));
-        assert_eq!(match_simple_args("hello {{world"), ("{{world", "hello "));
-        assert_eq!(match_simple_args("{hello world"), ("", "{hello world"));
-        assert_eq!(match_simple_args("hello \\world"), ("\\world", "hello "));
-        assert_eq!(match_simple_args("\\#{hello}"), ("\\#{hello}", ""));
         assert_eq!(
-            match_simple_args("hello \\#{world}"),
+            match_until_custom_arg_start("hello world"),
+            ("", "hello world")
+        );
+        assert_eq!(
+            match_until_custom_arg_start("hello #{world."),
+            ("#{world.", "hello ")
+        );
+        assert_eq!(match_until_custom_arg_start("#{hello"), ("#{hello", ""));
+        assert_eq!(
+            match_until_custom_arg_start("hello #world"),
+            ("", "hello #world")
+        );
+        assert_eq!(
+            match_until_custom_arg_start("hello {world"),
+            ("", "hello {world")
+        );
+        assert_eq!(match_until_custom_arg_start("{{hello"), ("{{hello", ""));
+        assert_eq!(
+            match_until_custom_arg_start("{{hello world"),
+            ("{{hello world", "")
+        );
+        assert_eq!(
+            match_until_custom_arg_start("hello {{world"),
+            ("{{world", "hello ")
+        );
+        assert_eq!(
+            match_until_custom_arg_start("{hello world"),
+            ("", "{hello world")
+        );
+        assert_eq!(
+            match_until_custom_arg_start("hello \\world"),
+            ("\\world", "hello ")
+        );
+        assert_eq!(
+            match_until_custom_arg_start("\\#{hello}"),
+            ("\\#{hello}", "")
+        );
+        assert_eq!(
+            match_until_custom_arg_start("hello \\#{world}"),
             ("\\#{world}", "hello ")
         );
-        assert_eq!(match_simple_args("\\{{hello}}"), ("\\{{hello}}", ""));
         assert_eq!(
-            match_simple_args("hello \\{{world}}"),
+            match_until_custom_arg_start("\\{{hello}}"),
+            ("\\{{hello}}", "")
+        );
+        assert_eq!(
+            match_until_custom_arg_start("hello \\{{world}}"),
             ("\\{{world}}", "hello ")
         );
     }
@@ -538,7 +574,7 @@ mod tests {
             (
                 "",
                 Unit::Option(ClapOption {
-                    empty_values: false,
+                    allow_empty_values: false,
                     long: Some("color".to_string()),
                     name: "color".to_string(),
                     short: None,
@@ -567,7 +603,7 @@ mod tests {
             (
                 "",
                 Unit::Option(ClapOption {
-                    empty_values: false,
+                    allow_empty_values: false,
                     long: Some("1color".to_string()),
                     name: "1color".to_string(),
                     short: None,

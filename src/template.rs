@@ -1,4 +1,4 @@
-use crate::{command, config::TemplateConfig, Command};
+use crate::{commands_parser, config::TemplateConfig, Command};
 
 use std::path::{Path, PathBuf};
 
@@ -33,7 +33,7 @@ impl Template {
     pub fn commands(&self) -> Result<Vec<Command>> {
         let mut commands = vec![];
         for cmd in self.commands.iter() {
-            let units = command::parse(cmd)?;
+            let units = commands_parser::parse(cmd)?;
             commands.push(units);
         }
         Ok(commands)
@@ -51,7 +51,7 @@ impl From<&TemplateConfig> for Template {
 
 #[cfg(test)]
 mod tests {
-    use crate::command::{ClapFlag, ClapPositional, Unit};
+    use crate::commands_parser::{ClapFlag, ClapPositional, Unit};
 
     use super::*;
 
@@ -126,7 +126,7 @@ mod tests {
                     Unit::Text("echo my name is ".to_string()),
                     Unit::Positional(ClapPositional {
                         name: "name".to_string(),
-                        empty_values: false,
+                        allow_empty_values: false,
                         index: 1,
                         required: true
                     }),
