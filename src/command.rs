@@ -16,7 +16,6 @@ pub struct ClapPositional {
     pub empty_values: bool,
     pub required: bool,
     pub index: usize,
-    // multiple: bool
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
@@ -26,7 +25,6 @@ pub struct ClapOption {
     pub short: Option<char>,
     pub empty_values: bool,
     pub required: bool,
-    // multiple: bool
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
@@ -108,7 +106,7 @@ fn match_usize(input: &str) -> Result<(&str, usize)> {
     bail!("expecting usize number, found {:?}", input);
 }
 
-/// Matches <u64>:
+/// Matches `<usize>:`
 /// Example: `1:`
 fn match_num(input: &str) -> Result<(&str, usize)> {
     let (next, num) = match_usize(input)?;
@@ -194,28 +192,6 @@ fn match_custom_arg(input: &str) -> Result<(&str, Unit)> {
     }
 }
 
-// fn match_scape(input: &str) -> Result<(&str, &str)> {
-//     let (next, _) = match_literal("\\")(input)?;
-
-//     match match_simple_args(input) {
-//         (next, "") =>
-//     }
-
-//     match next.find('}') {
-//         Some(index) => {
-//             Ok((&input[index + 2..], &input[..index]))
-//         },
-//         None => {
-//             let index = next.find('\\').context("used scape (\\) to scape nothing")?;
-//             Ok((&input[index + 2..]))
-//         }
-//     }
-//     // if let Some(index) = next.find('}') {
-//     //     return Ok((&input[index + 2..], ()))
-//     // }
-//     // Ok((next, ))
-// }
-
 fn match_unit(input: &str) -> Result<(&str, Unit)> {
     let (next, args) = match_simple_args(input);
 
@@ -246,39 +222,12 @@ fn match_args(input: &str) -> Result<((), Command)> {
 mod tests {
     use super::*;
 
-    // #[test]
-    // fn test_match_unit_with_single_word() {
-    //     assert_eq!(match_unit("hello"), Ok(("", "hello".to_string())));
-    // }
-
-    // #[test]
-    // fn test_match_unit_with_two_words() {
-    //     assert_eq!(
-    //         match_unit("hello world"),
-    //         Ok((" world", "hello".to_string()))
-    //     );
-    // }
-
-    // #[test]
-    // fn test_match_unit_with_single_quotes() {
-    //     assert_eq!(
-    //         match_unit("'hello world'"),
-    //         Ok(("", "hello world".to_string()))
-    //     );
-    // }
-
-    // #[test]
-    // fn test_match_unit_with_double_quotes() {
-    //     assert_eq!(
-    //         match_unit("\"hello world\""),
-    //         Ok(("", "hello world".to_string()))
-    //     );
-    // }
-
-    // #[test]
-    // fn test_match_unit_error() {
-    //     assert_eq!(match_unit(""), Err(""));
-    // }
+    #[test]
+    fn test_match_unit_error() {
+        assert!(match_unit("").is_err());
+        assert_eq!(match_unit("\\hello").map_err(|err| err.to_string()), Err("expected literal #{".to_string()));
+        assert_eq!(match_unit("\\").map_err(|err| err.to_string()), Err("expected literal #{".to_string()));
+    }
 
     #[test]
     fn test_match_unit() {
@@ -307,7 +256,6 @@ mod tests {
             match_unit("\\\\").unwrap(),
             ("", Unit::Text("\\".to_string()))
         );
-        assert!(match_unit("\\").is_err());
         assert_eq!(
             match_unit("\\#{hello}").unwrap(),
             ("", Unit::Text("#{hello}".to_string()))
@@ -316,7 +264,6 @@ mod tests {
             match_unit("hello #{world}").unwrap(),
             ("#{world}", Unit::Text("hello ".to_string()))
         );
-        assert!(match_unit("\\hello").is_err());
     }
 
     #[test]
@@ -652,15 +599,4 @@ mod tests {
     fn test_match_literal_with_empty_string() {
         assert!(match_literal(":")("").is_err())
     }
-
-    // #[test]
-    // fn test_match_scape() {
-    //     assert_eq!(match_scape("\\").unwrap(), ("", ""));
-    //     assert_eq!(match_scape("\\#{hello}").unwrap(), ("", "#{hello}"));
-    //     assert_eq!(match_scape("\\#{hello} world").unwrap(), (" world", "#{hello}"));
-    //     assert_eq!(match_scape("\\{{hello}}").unwrap(), ("", "#{hello}"));
-    //     assert_eq!(match_scape("\\{{hello}} world").unwrap(), (" world", "{{hello}}"));
-    //     assert!(match_scape("\\hello").is_err());
-    //     assert!(match_scape("hello").is_err());
-    // }
 }

@@ -282,7 +282,9 @@ fn test_create_project_custom_args_positional_optional_missing() {
             [templates.example]
             projects_dir = '{}'
             commands = [
-                'echo hello #{{1:name}}'
+                'echo hello #{{1:name}}',
+                'echo bye #{{1:name}}',
+                'echo hey #{{2:lastname}}'
             ]
         ",
             projects_dir_path.to_string_lossy()
@@ -297,7 +299,7 @@ fn test_create_project_custom_args_positional_optional_missing() {
         .arg("")
         .assert()
         .success()
-        .stdout("$ echo hello \nhello\n")
+        .stdout("$ echo hello \nhello\n$ echo bye \nbye\n$ echo hey \nhey\n")
         .stderr("");
 }
 
