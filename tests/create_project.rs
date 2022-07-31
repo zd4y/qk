@@ -30,8 +30,9 @@ fn test_create_project() {
         ),
     )
     .unwrap();
-    let mut cmd = Command::cargo_bin("qk").unwrap();
-    cmd.env("QK_CONFIG_PATH", config_path)
+    Command::cargo_bin("qk")
+        .unwrap()
+        .env("QK_CONFIG_PATH", config_path)
         .arg("example")
         .arg("one")
         .assert()
@@ -82,8 +83,9 @@ fn test_create_project_overwrite() {
         ),
     )
     .unwrap();
-    let mut cmd = Command::cargo_bin("qk").unwrap();
-    cmd.env("QK_CONFIG_PATH", config_path)
+    Command::cargo_bin("qk")
+        .unwrap()
+        .env("QK_CONFIG_PATH", config_path)
         .arg("example")
         .arg("one")
         .arg("--overwrite")
@@ -130,8 +132,9 @@ fn test_create_project_custom_args_positional_required() {
         ),
     )
     .unwrap();
-    let mut cmd = Command::cargo_bin("qk").unwrap();
-    cmd.env("QK_CONFIG_PATH", config_path)
+    Command::cargo_bin("qk")
+        .unwrap()
+        .env("QK_CONFIG_PATH", config_path)
         .arg("example2")
         .arg("two")
         .arg("--editor")
@@ -169,8 +172,9 @@ fn test_create_project_custom_args_positional_required_missing() {
         ",
     )
     .unwrap();
-    let mut cmd = Command::cargo_bin("qk").unwrap();
-    cmd.env("QK_CONFIG_PATH", config_path)
+    Command::cargo_bin("qk")
+        .unwrap()
+        .env("QK_CONFIG_PATH", config_path)
         .arg("example2")
         .arg("two")
         .arg("--editor")
@@ -210,8 +214,9 @@ fn test_create_project_custom_args_positional_short() {
         ",
     )
     .unwrap();
-    let mut cmd = Command::cargo_bin("qk").unwrap();
-    cmd.env("QK_CONFIG_PATH", config_path)
+    Command::cargo_bin("qk")
+        .unwrap()
+        .env("QK_CONFIG_PATH", config_path)
         .arg("mytemplate")
         .arg("myproject")
         .arg("hello")
@@ -252,8 +257,9 @@ fn test_create_project_custom_args_positional_optional() {
         ),
     )
     .unwrap();
-    let mut cmd = Command::cargo_bin("qk").unwrap();
-    cmd.env("QK_CONFIG_PATH", config_path)
+    Command::cargo_bin("qk")
+        .unwrap()
+        .env("QK_CONFIG_PATH", config_path)
         .arg("example")
         .arg("myproject")
         .arg("--editor")
@@ -291,8 +297,9 @@ fn test_create_project_custom_args_positional_optional_missing() {
         ),
     )
     .unwrap();
-    let mut cmd = Command::cargo_bin("qk").unwrap();
-    cmd.env("QK_CONFIG_PATH", config_path)
+    Command::cargo_bin("qk")
+        .unwrap()
+        .env("QK_CONFIG_PATH", config_path)
         .arg("example")
         .arg("myproject")
         .arg("--editor")
@@ -327,8 +334,9 @@ fn test_create_project_custom_args_positional_empty_values_allowed() {
         ),
     )
     .unwrap();
-    let mut cmd = Command::cargo_bin("qk").unwrap();
-    cmd.env("QK_CONFIG_PATH", config_path)
+    Command::cargo_bin("qk")
+        .unwrap()
+        .env("QK_CONFIG_PATH", config_path)
         .env_remove("VISUAL")
         .env("EDITOR", "echo")
         .arg("example")
@@ -372,8 +380,9 @@ fn test_create_project_custom_args_positional_empty_values_not_allowed() {
         ),
     )
     .unwrap();
-    let mut cmd = Command::cargo_bin("qk").unwrap();
-    cmd.env("QK_CONFIG_PATH", config_path)
+    Command::cargo_bin("qk")
+        .unwrap()
+        .env("QK_CONFIG_PATH", config_path)
         .env_remove("VISUAL")
         .env("EDITOR", "echo")
         .arg("example")
@@ -416,8 +425,9 @@ fn test_create_project_custom_args_option_required() {
         ),
     )
     .unwrap();
-    let mut cmd = Command::cargo_bin("qk").unwrap();
-    cmd.env("QK_CONFIG_PATH", config_path)
+    Command::cargo_bin("qk")
+        .unwrap()
+        .env("QK_CONFIG_PATH", config_path)
         .env("VISUAL", "echo")
         .arg("example")
         .arg("project1")
@@ -453,8 +463,9 @@ fn test_create_project_custom_args_option_required_missing() {
         ",
     )
     .unwrap();
-    let mut cmd = Command::cargo_bin("qk").unwrap();
-    cmd.env("QK_CONFIG_PATH", config_path)
+    Command::cargo_bin("qk")
+        .unwrap()
+        .env("QK_CONFIG_PATH", config_path)
         .env("VISUAL", "echo")
         .arg("example")
         .arg("project1")
@@ -498,8 +509,9 @@ fn test_create_project_custom_args_option_optional_only_short() {
         ),
     )
     .unwrap();
-    let mut cmd = Command::cargo_bin("qk").unwrap();
-    cmd.env("QK_CONFIG_PATH", config_path)
+    Command::cargo_bin("qk")
+        .unwrap()
+        .env("QK_CONFIG_PATH", config_path)
         .env("VISUAL", "echo")
         .arg("example")
         .arg("project1")
@@ -543,8 +555,9 @@ fn test_create_project_custom_args_option_optional_missing() {
         ),
     )
     .unwrap();
-    let mut cmd = Command::cargo_bin("qk").unwrap();
-    cmd.env("QK_CONFIG_PATH", config_path)
+    Command::cargo_bin("qk")
+        .unwrap()
+        .env("QK_CONFIG_PATH", config_path)
         .env("VISUAL", "echo")
         .arg("example")
         .arg("project1")
@@ -585,8 +598,9 @@ fn test_create_project_custom_args_flag() {
         ),
     )
     .unwrap();
-    let mut cmd = Command::cargo_bin("qk").unwrap();
-    cmd.env("QK_CONFIG_PATH", config_path)
+    Command::cargo_bin("qk")
+        .unwrap()
+        .env("QK_CONFIG_PATH", config_path)
         .env_remove("VISUAL")
         .env("EDITOR", "echo")
         .arg("example")

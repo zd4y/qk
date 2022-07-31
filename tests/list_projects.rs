@@ -5,9 +5,14 @@ use assert_fs::prelude::*;
 
 #[test]
 fn test_list_projects_short_flag_missing_template_arg() {
-    let mut cmd = Command::cargo_bin("qk").unwrap();
-    cmd.arg("-L").assert().failure().stdout("").stderr(
-        "\
+    Command::cargo_bin("qk")
+        .unwrap()
+        .arg("-L")
+        .assert()
+        .failure()
+        .stdout("")
+        .stderr(
+            "\
 error: The following required arguments were not provided:
     <template>
 
@@ -21,7 +26,7 @@ USAGE:
 
 For more information try --help
 ",
-    );
+        );
 }
 
 #[test]
@@ -30,8 +35,9 @@ fn test_list_projects_short_flag_no_templates() {
     let config_file = temp.child("qk.toml");
     config_file.touch().unwrap();
 
-    let mut cmd = Command::cargo_bin("qk").unwrap();
-    cmd.env("QK_CONFIG_PATH", config_file.path())
+    Command::cargo_bin("qk")
+        .unwrap()
+        .env("QK_CONFIG_PATH", config_file.path())
         .arg("-L")
         .arg("template")
         .assert()
@@ -46,8 +52,9 @@ fn test_list_projects_long_flag_no_templates() {
     let config_file = temp.child("qk.toml");
     config_file.touch().unwrap();
 
-    let mut cmd = Command::cargo_bin("qk").unwrap();
-    cmd.env("QK_CONFIG_PATH", config_file.path())
+    Command::cargo_bin("qk")
+        .unwrap()
+        .env("QK_CONFIG_PATH", config_file.path())
         .arg("--list-projects")
         .arg("template")
         .assert()
@@ -73,8 +80,9 @@ fn test_list_projects_short_flag_some_templates_dont_exist() {
         ",
     )
     .unwrap();
-    let mut cmd = Command::cargo_bin("qk").unwrap();
-    cmd.env("QK_CONFIG_PATH", config_path)
+    Command::cargo_bin("qk")
+        .unwrap()
+        .env("QK_CONFIG_PATH", config_path)
         .arg("-L")
         .arg("example")
         .assert()
@@ -112,8 +120,9 @@ fn test_list_projects_short_flag_some_templates_empty() {
         ),
     )
     .unwrap();
-    let mut cmd = Command::cargo_bin("qk").unwrap();
-    cmd.env("QK_CONFIG_PATH", config_path)
+    Command::cargo_bin("qk")
+        .unwrap()
+        .env("QK_CONFIG_PATH", config_path)
         .arg("-L")
         .arg("example2")
         .assert()
@@ -152,8 +161,9 @@ fn test_list_projects_short_flag_some_templates() {
         ),
     )
     .unwrap();
-    let mut cmd = Command::cargo_bin("qk").unwrap();
-    cmd.env("QK_CONFIG_PATH", config_path)
+    Command::cargo_bin("qk")
+        .unwrap()
+        .env("QK_CONFIG_PATH", config_path)
         .arg("-L")
         .arg("example2")
         .assert()

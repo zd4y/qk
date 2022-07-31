@@ -5,8 +5,9 @@ use assert_fs::prelude::*;
 fn test_create_default_config() {
     let temp = assert_fs::TempDir::new().unwrap();
 
-    let mut cmd = Command::cargo_bin("qk").unwrap();
-    cmd.arg("-T")
+    Command::cargo_bin("qk")
+        .unwrap()
+        .arg("-T")
         .env("HOME", temp.path())
         .assert()
         .success()

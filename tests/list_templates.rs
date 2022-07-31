@@ -9,8 +9,9 @@ fn test_list_templates_short_flag_no_templates() {
     let config_file = temp.child("qk.toml");
     config_file.touch().unwrap();
 
-    let mut cmd = Command::cargo_bin("qk").unwrap();
-    cmd.env("QK_CONFIG_PATH", config_file.path())
+    Command::cargo_bin("qk")
+        .unwrap()
+        .env("QK_CONFIG_PATH", config_file.path())
         .arg("-T")
         .assert()
         .failure()
@@ -24,8 +25,9 @@ fn test_list_templates_long_flag_no_templates() {
     let config_file = temp.child("qk.toml");
     config_file.touch().unwrap();
 
-    let mut cmd = Command::cargo_bin("qk").unwrap();
-    cmd.env("QK_CONFIG_PATH", config_file.path())
+    Command::cargo_bin("qk")
+        .unwrap()
+        .env("QK_CONFIG_PATH", config_file.path())
         .arg("--list-templates")
         .assert()
         .failure()
