@@ -49,7 +49,7 @@ fn handle_list_projects(config: &Config, matches: &ArgMatches) -> Result<()> {
         .context("template not found")?;
 
     let mut items =
-        utils::list_dir(template.projects_dir).context("failed reading the project dir")?;
+        utils::list_dir(template.projects_dir()).context("failed reading the project dir")?;
     items.sort();
     if items.is_empty() {
         bail!("no projects yet")
@@ -86,7 +86,11 @@ fn handle_main_operation(config: &Config, matches: &ArgMatches) -> Result<()> {
         .context("template not found")?;
 
     let project_name = matches.get_one::<String>("project").unwrap();
-    let custom_args = matches.get_many("custom-args").unwrap_or_default();
+    let custom_args = matches
+        .get_many::<String>("custom-args")
+        .unwrap_or_default()
+        .cloned()
+        .collect();
     let editor = utils::get_editor(config, &template, matches);
     let overwrite = *matches.get_one::<bool>("overwrite").unwrap();
 

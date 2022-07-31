@@ -1,5 +1,4 @@
-use crate::Template;
-
+use crate::{commands_parser, Command};
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
@@ -15,7 +14,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
     /// Default editor to execute when creating or opening projects
-    pub editor: Option<String>,
+    editor: Option<String>,
 
     /// Templates to use for creating new projects
     #[serde(default)]
@@ -23,6 +22,10 @@ pub struct Config {
 }
 
 impl Config {
+    pub fn editor(&self) -> Option<&String> {
+        self.editor.as_ref()
+    }
+
     pub fn find_template(&self, template: &str) -> Option<Template> {
         self.templates.get(template).map(Into::into)
     }
@@ -90,9 +93,61 @@ pub enum TemplateConfig {
     Complete(Template),
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+pub struct Template {
+    #[serde(skip)]
+    name: String,
+    /// The directory where new projects with this template will be created
+    projects_dir: PathBuf,
+    /// The editor to execute when creating or opening projects with this template
+    editor: Option<String>,
+    #[serde(default)]
+    /// The commands to execute when creating a project with this template
+    commands: Vec<String>,
+}
+
+impl Template {
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn projects_dir(&self) -> &Path {
+        &self.projects_dir
+    }
+
+    pub fn editor(&self) -> Option<&String> {
+        self.editor.as_ref()
+    }
+
+    /// Returns the commands in this template after parsing them
+    pub fn commands(&self) -> Result<Vec<Command>> {
+        let mut commands = vec![];
+        for cmd in self.commands.iter() {
+            let units = commands_parser::parse(cmd)?;
+            commands.push(units);
+        }
+        Ok(commands)
+    }
+}
+
+impl From<&TemplateConfig> for Template {
+    fn from(template: &TemplateConfig) -> Template {
+        match template {
+            TemplateConfig::OnlyProjectsDir(projects_dir) => Template {
+                projects_dir: projects_dir.into(),
+                editor: None,
+                commands: Vec::new(),
+                name: String::from(""),
+            },
+            TemplateConfig::Complete(template) => template.clone(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::Unit;
 
     #[test]
     fn test_find_template_returns_none_when_empty() {
@@ -216,5 +271,57 @@ mod tests {
         );
 
         assert_eq!(config.templates(), expected_templates);
+    }
+
+    #[test]
+    fn test_from_template_config() {
+        let template_config1 = TemplateConfig::OnlyProjectsDir(String::from("a"));
+        let template_config2 = TemplateConfig::Complete(Template {
+            projects_dir: PathBuf::from("b"),
+            editor: Some(String::from("vi")),
+            commands: vec![String::from("echo hello")],
+            name: String::from("b"),
+        });
+
+        let template1: Template = (&template_config1).into();
+        let template2: Template = (&template_config2).into();
+
+        assert_eq!(
+            template1,
+            Template {
+                projects_dir: PathBuf::from("a"),
+                editor: None,
+                commands: vec![],
+                name: String::from("")
+            }
+        );
+
+        assert_eq!(
+            template2,
+            Template {
+                projects_dir: PathBuf::from("b"),
+                editor: Some(String::from("vi")),
+                commands: vec![String::from("echo hello")],
+                name: String::from("b")
+            }
+        );
+    }
+
+    #[test]
+    fn test_commands_method_with_simple_commands() {
+        let template = Template {
+            name: "a".to_string(),
+            projects_dir: "a".into(),
+            editor: None,
+            commands: vec![String::from("echo hello world"), String::from("echo hey!")],
+        };
+
+        assert_eq!(
+            template.commands().unwrap(),
+            vec![
+                vec![Unit::Text("echo hello world".to_string())],
+                vec![Unit::Text("echo hey!".to_string())]
+            ]
+        );
     }
 }

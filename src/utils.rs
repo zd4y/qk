@@ -23,11 +23,11 @@ pub fn get_editor(config: &Config, template: &Template, matches: &ArgMatches) ->
     let mut editor = matches.get_one("editor").cloned();
 
     if editor.is_none() {
-        editor = template.editor.clone();
+        editor = template.editor().cloned();
     }
 
     if editor.is_none() {
-        editor = config.editor.clone();
+        editor = config.editor().cloned();
     }
 
     if editor.is_none() {

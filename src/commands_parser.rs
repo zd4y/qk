@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use anyhow::{bail, ensure, Context, Result};
 
 pub type Command = Vec<Unit>;
@@ -10,28 +12,90 @@ pub enum Unit {
     Flag(ClapFlag),
 }
 
+impl Unit {
+    pub fn to_clap_args(units: HashSet<&Unit>) -> Vec<clap::Arg> {
+        units
+            .iter()
+            .filter_map(|arg| match arg {
+                Unit::Positional(unit) => {
+                    let mut arg = clap::Arg::new(&*unit.name)
+                        .required(unit.required)
+                        .index(unit.index);
+                    if !unit.allow_empty_values {
+                        arg = arg.value_parser(clap::builder::NonEmptyStringValueParser::new())
+                    }
+                    Some(arg)
+                }
+                Unit::Option(unit) => {
+                    let mut arg = clap::Arg::new(&*unit.name)
+                        .takes_value(true)
+                        .required(unit.required);
+                    if !unit.allow_empty_values {
+                        arg = arg.value_parser(clap::builder::NonEmptyStringValueParser::new())
+                    }
+                    if let Some(long) = &unit.long {
+                        arg = arg.long(long);
+                    }
+                    if let Some(short) = unit.short {
+                        arg = arg.short(short)
+                    }
+                    Some(arg)
+                }
+                Unit::Flag(unit) => {
+                    let mut arg = clap::Arg::new(&*unit.name).action(clap::ArgAction::SetTrue);
+                    if let Some(long) = &unit.long {
+                        arg = arg.long(long);
+                    }
+                    if let Some(short) = unit.short {
+                        arg = arg.short(short)
+                    }
+                    Some(arg)
+                }
+                _ => None,
+            })
+            .collect()
+    }
+
+    pub fn to_value(&self, matches: &clap::ArgMatches) -> Option<String> {
+        match self {
+            Unit::Text(text) => Some(text.to_owned()),
+            Unit::Positional(unit) => matches.get_one::<String>(&unit.name).cloned(),
+            Unit::Option(unit) => matches.get_one::<String>(&unit.name).cloned(),
+            Unit::Flag(unit) => {
+                if *matches.get_one::<bool>(&unit.name).unwrap() {
+                    let prefix = if unit.long.is_none() { "-" } else { "--" };
+                    let unit = format!("{}{}", prefix, unit.name);
+                    Some(unit)
+                } else {
+                    None
+                }
+            }
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub struct ClapPositional {
-    pub name: String,
-    pub allow_empty_values: bool,
-    pub required: bool,
-    pub index: usize,
+    name: String,
+    allow_empty_values: bool,
+    required: bool,
+    index: usize,
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub struct ClapOption {
-    pub name: String,
-    pub long: Option<String>,
-    pub short: Option<char>,
-    pub allow_empty_values: bool,
-    pub required: bool,
+    name: String,
+    long: Option<String>,
+    short: Option<char>,
+    allow_empty_values: bool,
+    required: bool,
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub struct ClapFlag {
-    pub name: String,
-    pub long: Option<String>,
-    pub short: Option<char>,
+    name: String,
+    long: Option<String>,
+    short: Option<char>,
 }
 
 pub fn parse(command: &str) -> Result<Command> {
