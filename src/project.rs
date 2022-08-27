@@ -36,7 +36,13 @@ impl<'a> Project<'a> {
     }
 
     /// Opens the project in editor if it exists or creates it and then opens it.
-    pub fn open_or_create(&self) -> Result<()> {
+    pub fn open_or_create(&mut self) -> Result<()> {
+        if self.name == "-h" || self.name == "--help" {
+            self.custom_args.push(self.name.to_string());
+            self.name = "";
+            return self.create();
+        }
+
         if self.overwrite && self.dir.exists() {
             fs::remove_dir_all(&self.dir)?;
         }
