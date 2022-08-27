@@ -1,6 +1,6 @@
 use crate::{utils, Template, Unit};
 
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 
 use std::collections::HashSet;
 use std::fs;
@@ -47,7 +47,14 @@ impl<'a> Project<'a> {
             fs::remove_dir_all(&self.dir)?;
         }
 
-        if !self.dir.exists() {
+        if self.dir.exists() {
+            if !self.custom_args.is_empty() {
+                bail!(
+                    "project {:?} already exists, custom arguments not allowed",
+                    self.name
+                )
+            }
+        } else {
             self.create()?;
         }
 
