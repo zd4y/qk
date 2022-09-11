@@ -1,4 +1,4 @@
-use crate::{utils, Template, Unit};
+use crate::{Template, Unit};
 
 use anyhow::{bail, Context, Result};
 
@@ -14,6 +14,7 @@ pub struct Project<'a> {
     dir: PathBuf,
     custom_args: Vec<String>,
     editor: Option<String>,
+    shell: String,
     overwrite: bool,
 }
 
@@ -23,6 +24,7 @@ impl<'a> Project<'a> {
         name: &'a str,
         custom_args: Vec<String>,
         editor: Option<String>,
+        shell: String,
         overwrite: bool,
     ) -> Self {
         Self {
@@ -32,6 +34,7 @@ impl<'a> Project<'a> {
             custom_args,
             overwrite,
             editor,
+            shell,
         }
     }
 
@@ -64,9 +67,8 @@ impl<'a> Project<'a> {
     /// Creates the project
     fn create(&self) -> Result<()> {
         let commands = self.commands()?;
-        let shell = utils::get_shell();
         for command in commands {
-            self.run_cmd_str(&command, &shell)?;
+            self.run_cmd_str(&command, &self.shell)?;
         }
         Ok(())
     }

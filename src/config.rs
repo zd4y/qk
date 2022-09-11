@@ -16,6 +16,9 @@ pub struct Config {
     /// Default editor to execute when creating or opening projects
     editor: Option<String>,
 
+    /// Default shell to use for executing commands when creating projects
+    shell: Option<String>,
+
     /// Templates to use for creating new projects
     #[serde(default)]
     templates: HashMap<String, TemplateConfig>,
@@ -24,6 +27,10 @@ pub struct Config {
 impl Config {
     pub fn editor(&self) -> Option<&String> {
         self.editor.as_ref()
+    }
+
+    pub fn shell(&self) -> Option<&String> {
+        self.shell.as_ref()
     }
 
     pub fn find_template(&self, template: &str) -> Option<Template> {
@@ -59,6 +66,7 @@ impl Default for Config {
             TemplateConfig::Complete(Template {
                 projects_dir: PathBuf::from("/path/to/example/"),
                 editor: Some(String::from("code")),
+                shell: Some(String::from("bash")),
                 commands: vec![
                     String::from("echo hello"),
                     String::from("echo $PWD"),
@@ -69,6 +77,7 @@ impl Default for Config {
         );
         Self {
             editor: Some(String::from("vi")),
+            shell: Some(String::from("sh")),
             templates,
         }
     }
@@ -97,10 +106,16 @@ pub enum TemplateConfig {
 pub struct Template {
     #[serde(skip)]
     name: String,
+
     /// The directory where new projects with this template will be created
     projects_dir: PathBuf,
+
     /// The editor to execute when creating or opening projects with this template
     editor: Option<String>,
+
+    /// The shell to use for executing commands when creating projects with this template
+    shell: Option<String>,
+
     #[serde(default)]
     /// The commands to execute when creating a project with this template
     commands: Vec<String>,
@@ -117,6 +132,10 @@ impl Template {
 
     pub fn editor(&self) -> Option<&String> {
         self.editor.as_ref()
+    }
+
+    pub fn shell(&self) -> Option<&String> {
+        self.shell.as_ref()
     }
 
     /// Returns the commands in this template after parsing them
@@ -136,6 +155,7 @@ impl From<&TemplateConfig> for Template {
             TemplateConfig::OnlyProjectsDir(projects_dir) => Template {
                 projects_dir: projects_dir.into(),
                 editor: None,
+                shell: None,
                 commands: Vec::new(),
                 name: String::from(""),
             },
@@ -153,6 +173,7 @@ mod tests {
     fn test_find_template_returns_none_when_empty() {
         let config = Config {
             editor: None,
+            shell: None,
             templates: HashMap::new(),
         };
 
@@ -168,6 +189,7 @@ mod tests {
         );
         let config = Config {
             editor: None,
+            shell: None,
             templates,
         };
 
@@ -195,6 +217,7 @@ mod tests {
 
         let config = Config {
             editor: None,
+            shell: None,
             templates,
         };
 
@@ -203,6 +226,7 @@ mod tests {
             Some(Template {
                 projects_dir: PathBuf::from("b"),
                 editor: None,
+                shell: None,
                 commands: vec![],
                 name: String::from("")
             })
@@ -223,6 +247,7 @@ mod tests {
             TemplateConfig::Complete(Template {
                 projects_dir: PathBuf::from("b"),
                 editor: Some(String::from("vi")),
+                shell: Some(String::from("zsh")),
                 commands: vec![String::from("echo hello")],
                 name: String::from("b"),
             }),
@@ -235,6 +260,7 @@ mod tests {
 
         let config = Config {
             editor: None,
+            shell: None,
             templates,
         };
 
@@ -245,6 +271,7 @@ mod tests {
             Template {
                 projects_dir: PathBuf::from("a"),
                 editor: None,
+                shell: None,
                 commands: vec![],
                 name: String::from(""),
             },
@@ -255,6 +282,7 @@ mod tests {
             Template {
                 projects_dir: PathBuf::from("b"),
                 editor: Some(String::from("vi")),
+                shell: Some(String::from("zsh")),
                 commands: vec![String::from("echo hello")],
                 name: String::from("b"),
             },
@@ -265,6 +293,7 @@ mod tests {
             Template {
                 projects_dir: PathBuf::from("c"),
                 editor: None,
+                shell: None,
                 commands: vec![],
                 name: String::from(""),
             },
@@ -279,6 +308,7 @@ mod tests {
         let template_config2 = TemplateConfig::Complete(Template {
             projects_dir: PathBuf::from("b"),
             editor: Some(String::from("vi")),
+            shell: Some(String::from("fish")),
             commands: vec![String::from("echo hello")],
             name: String::from("b"),
         });
@@ -291,6 +321,7 @@ mod tests {
             Template {
                 projects_dir: PathBuf::from("a"),
                 editor: None,
+                shell: None,
                 commands: vec![],
                 name: String::from("")
             }
@@ -301,6 +332,7 @@ mod tests {
             Template {
                 projects_dir: PathBuf::from("b"),
                 editor: Some(String::from("vi")),
+                shell: Some(String::from("fish")),
                 commands: vec![String::from("echo hello")],
                 name: String::from("b")
             }
@@ -313,6 +345,7 @@ mod tests {
             name: "a".to_string(),
             projects_dir: "a".into(),
             editor: None,
+            shell: None,
             commands: vec![String::from("echo hello world"), String::from("echo hey!")],
         };
 

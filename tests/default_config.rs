@@ -17,9 +17,11 @@ fn test_create_default_config() {
     temp.child(".config").child("qk").child("qk.toml").assert(
         "\
 editor = 'vi'
+shell = 'sh'
 [templates.example]
 projects_dir = '/path/to/example/'
 editor = 'code'
+shell = 'bash'
 commands = [
     'echo hello',
     'echo $PWD',

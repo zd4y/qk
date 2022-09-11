@@ -46,7 +46,15 @@ pub fn get_editor(config: &Config, template: &Template, matches: &ArgMatches) ->
     editor
 }
 
-pub fn get_shell() -> String {
+pub fn get_shell(config: &Config, template: &Template) -> String {
+    if let Some(shell) = template.shell() {
+        return shell.clone();
+    }
+
+    if let Some(shell) = config.shell() {
+        return shell.clone();
+    }
+
     #[cfg(unix)]
     return env::var("SHELL").unwrap_or_else(|_| "sh".to_string());
 

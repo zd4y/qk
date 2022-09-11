@@ -92,7 +92,16 @@ fn handle_main_operation(config: &Config, matches: &ArgMatches) -> Result<()> {
         .cloned()
         .collect();
     let editor = utils::get_editor(config, &template, matches);
+    let shell = utils::get_shell(config, &template);
     let overwrite = *matches.get_one::<bool>("overwrite").unwrap();
 
-    Project::new(&template, project_name, custom_args, editor, overwrite).open_or_create()
+    Project::new(
+        &template,
+        project_name,
+        custom_args,
+        editor,
+        shell,
+        overwrite,
+    )
+    .open_or_create()
 }
