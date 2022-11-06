@@ -68,7 +68,10 @@ impl<'a> Project<'a> {
     fn create(&self) -> Result<()> {
         let commands = self.commands()?;
         for command in commands {
-            self.run_cmd_str(&command, &self.shell)?;
+            let exit_status = self.run_cmd_str(&command, &self.shell)?;
+            if !exit_status.success() {
+                bail!("command exited with non-successful {exit_status}")
+            }
         }
         Ok(())
     }
