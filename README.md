@@ -13,7 +13,7 @@ qk template project
 Using cargo:
 
 ```
-cargo install --git https://github.com/zd4y/qk
+cargo install qk
 ```
 
 ## Example

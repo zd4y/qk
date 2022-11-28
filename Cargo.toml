@@ -3,8 +3,13 @@ name = "qk"
 version = "0.1.0"
 authors = ["zd4y"]
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+description = "CLI for quickly starting new projects"
+homepage = "https://github.com/zd4y/qk"
+repository = "https://github.com/zd4y/qk"
+readme = "README.md"
+license = "MIT"
+keywords = ["cli", "quick", "project", "start", "new"]
+categories = ["command-line-utilities", "development-tools", "filesystem"]
 
 [dependencies]
 anyhow = "1.0"
