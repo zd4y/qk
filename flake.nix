@@ -9,14 +9,15 @@
       let
         cargoToml = with builtins; (fromTOML (readFile ./Cargo.toml));
         pkgs = import nixpkgs { inherit system; };
-      in
+      in rec
       {
-        defaultPackage = pkgs.rustPlatform.buildRustPackage {
+        packages.qk = pkgs.rustPlatform.buildRustPackage {
           inherit (cargoToml.package) name version;
           src = nixpkgs.lib.cleanSource ./.;
           doCheck = true;
           cargoLock.lockFile = ./Cargo.lock;
         };
+        defaultPackage = packages.qk;
       }
     );
 }
