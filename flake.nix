@@ -11,13 +11,15 @@
         pkgs = import nixpkgs { inherit system; };
       in rec
       {
-        packages.qk = pkgs.rustPlatform.buildRustPackage {
-          inherit (cargoToml.package) name version;
-          src = nixpkgs.lib.cleanSource ./.;
-          doCheck = true;
-          cargoLock.lockFile = ./Cargo.lock;
+        packages = {
+          qk = pkgs.rustPlatform.buildRustPackage {
+            inherit (cargoToml.package) name version;
+            src = nixpkgs.lib.cleanSource ./.;
+            doCheck = true;
+            cargoLock.lockFile = ./Cargo.lock;
+          };
+          default = packages.qk;
         };
-        defaultPackage = packages.qk;
       }
     );
 }
