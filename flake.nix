@@ -13,7 +13,8 @@
       {
         packages = {
           qk = pkgs.rustPlatform.buildRustPackage {
-            inherit (cargoToml.package) name version;
+            inherit (cargoToml.package) version;
+            pname = cargoToml.package.name;
             src = nixpkgs.lib.cleanSource ./.;
             doCheck = true;
             cargoLock.lockFile = ./Cargo.lock;
