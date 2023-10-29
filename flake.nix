@@ -8,7 +8,7 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         cargoToml = with builtins; (fromTOML (readFile ./Cargo.toml));
-        pkgs = import nixpkgs { inherit system; };
+        pkgs = nixpkgs.legacyPackages.${system};
       in rec
       {
         packages = {
