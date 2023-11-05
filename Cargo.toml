@@ -1,6 +1,6 @@
 [package]
 name = "qk"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["zd4y"]
 edition = "2021"
 description = "CLI for quickly starting new projects"
