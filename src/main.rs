@@ -95,7 +95,9 @@ fn handle_main_operation(config: &Config, matches: &ArgMatches) -> Result<()> {
     let shell = utils::get_shell(config, &template);
     let overwrite = *matches.get_one::<bool>("overwrite").unwrap();
 
-    fs::create_dir_all(template.projects_dir())?;
+    if !matches.get_one::<bool>("no-create-projects-dir").unwrap() {
+        fs::create_dir_all(template.projects_dir())?;
+    }
 
     Project::new(
         &template,

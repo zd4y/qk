@@ -180,6 +180,7 @@ fn test_create_project_custom_args_positional_required_missing() {
         .arg("--editor")
         .arg("echo")
         .arg("bye.txt")
+        .arg("--no-create-projects-dir")
         .assert()
         .failure()
         .stdout("")
@@ -220,6 +221,7 @@ fn test_create_project_custom_args_positional_short() {
         .arg("mytemplate")
         .arg("myproject")
         .arg("hello")
+        .arg("--no-create-projects-dir")
         .assert()
         .failure()
         .stdout("")
@@ -469,6 +471,7 @@ fn test_create_project_custom_args_option_required_missing() {
         .env("VISUAL", "echo")
         .arg("example")
         .arg("project1")
+        .arg("--no-create-projects-dir")
         .assert()
         .failure()
         .stderr(

@@ -74,6 +74,15 @@ pub fn cmd() -> Command<'static> {
                 .action(clap::ArgAction::SetTrue),
         )
         .arg(
+            Arg::new("no-create-projects-dir")
+            .long("no-create-projects-dir")
+            .conflicts_with("list-projects")
+            .conflicts_with("list-templates")
+            .action(clap::ArgAction::SetTrue)
+            .help("Don't create project_dir automatically")
+            .long_help("When this option is set, qk will not create the template's projects_dir if it does not exist")
+        )
+        .arg(
             Arg::new("list-projects")
                 .short('L')
                 .long("list-projects")
