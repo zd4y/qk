@@ -43,7 +43,7 @@ impl<'a> Project<'a> {
         if self.name == "-h" || self.name == "--help" {
             self.custom_args.push(self.name.to_string());
             self.name = "";
-            return self.create();
+            return self.commands().map(|_| ());
         }
 
         if self.overwrite && self.dir.exists() {

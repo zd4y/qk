@@ -8,7 +8,7 @@ use qk::config::Config;
 use qk::project::Project;
 use qk::utils;
 
-use std::process;
+use std::{fs, process};
 
 use anyhow::Context;
 use anyhow::{bail, Result};
@@ -94,6 +94,8 @@ fn handle_main_operation(config: &Config, matches: &ArgMatches) -> Result<()> {
     let editor = utils::get_editor(config, &template, matches);
     let shell = utils::get_shell(config, &template);
     let overwrite = *matches.get_one::<bool>("overwrite").unwrap();
+
+    fs::create_dir_all(template.projects_dir())?;
 
     Project::new(
         &template,

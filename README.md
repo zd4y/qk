@@ -30,8 +30,8 @@ editor = 'vim'
 > The config is located in `~/.config/qk/qk.toml` on Linux
 > and in `%appdata%\qk\config\qk.toml` on Windows.
 
-> `/home/yourusername/projects/rs` should exist and be a directory.
-> On Windows it would be `C:/Users/yourusername/projects/rs`.
+> `/home/yourusername/projects/rs/` will be created if it does not exist.
+> On Windows it would be `C:\Users\yourusername\projects\rs\`.
 
 > `$QK_PROJECT_NAME` on Windows would be `$Env:QK_PROJECT_NAME`.
 
@@ -44,7 +44,7 @@ replaced by `myproject`.
 The commands are run with a shell, on windows it is PowerShell and on linux it is read from the
 environment variable `$SHELL` or if not set, the default is `sh`. So in windows you would use
 `$Env:QK_PROJECT_NAME` instead. You can also set the shell in the configuration file at the
-beggining of the file or on a specific template, like you would do with the editor option.
+beginning of the file or in a specific template, as you would with the editor option.
 
 These are the available environment variables:
 
@@ -69,7 +69,7 @@ example = '/path/to/example'
 And the only thing it will do is execute the editor in the project's dir.
 
 See `--editor` help for information on what editor is used when not specified. You can set a
-default editor in the config by adding `editor = 'your_editor'` at the beggining of the config, for
+default editor in the config by adding `editor = 'your_editor'` at the beginning of the config, for
 example:
 
 ```toml
@@ -91,7 +91,7 @@ The `--` before the custom argument is required for arguments that start with `-
 Custom arguments can be specified with `#{arg}` in a command of a template in the config and, when
 calling `qk`, specified after `--` (positional arguments don't need to be after `--`).
 
-- A number followed by a colon at the beggining makes it a positional argument:
+- A number followed by a colon at the beginning makes it a positional argument:
 `#{1:arg}`, `#{2:arg2}`, ...
 
 - Just the name makes it an optional option: `#{arg}` (`--arg value`)
