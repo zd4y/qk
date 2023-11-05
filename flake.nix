@@ -9,7 +9,8 @@
       let
         cargoToml = with builtins; (fromTOML (readFile ./Cargo.toml));
         pkgs = nixpkgs.legacyPackages.${system};
-      in rec
+      in
+      rec
       {
         packages = {
           qk = pkgs.rustPlatform.buildRustPackage {
@@ -20,6 +21,14 @@
             cargoLock.lockFile = ./Cargo.lock;
           };
           default = packages.qk;
+        };
+        devShells.default = pkgs.mkShell {
+          buildInputs = with pkgs; [
+            rustc
+            cargo
+            rustfmt
+            clippy
+          ];
         };
       }
     );
