@@ -13,11 +13,11 @@ categories = ["command-line-utilities", "development-tools", "filesystem"]
 
 [dependencies]
 anyhow = "1.0"
-confy = "0.5.1"
+confy = "0.6"
 
 [dependencies.clap]
-version = "3.2.14"
-features = ["cargo", "env", "deprecated", "wrap_help"]
+version = "4"
+features = ["cargo", "env", "deprecated", "wrap_help", "string"]
 
 [dependencies.serde]
 version = "1.0"

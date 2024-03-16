@@ -110,7 +110,7 @@ impl<'a> Project<'a> {
     }
 
     fn get_cmd(&self) -> clap::Command {
-        clap::Command::new(self.template.name())
+        clap::Command::new(self.template.name().to_string())
             .no_binary_name(true)
             .disable_version_flag(true)
     }

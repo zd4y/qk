@@ -12,7 +12,7 @@ const MAIN_OPERATION: &[&str; 4] = &["project", "custom-args", "editor", "overwr
 const OTHER_OPERATIONS: &[&str; 2] = &["list-projects", "list-templates"];
 const COMMANDS_HEADING: &str = "COMMANDS";
 
-pub fn cmd() -> Command<'static> {
+pub fn cmd() -> Command {
     Command::new(crate_name!())
         .version(crate_version!())
         .about("qk allows you to quickly create new projects using templates")
@@ -21,17 +21,20 @@ pub fn cmd() -> Command<'static> {
             Arg::new("template")
                 .required_unless_present("list-templates")
                 .value_parser(clap::builder::NonEmptyStringValueParser::new())
+                .action(clap::ArgAction::Set)
                 .help("The name of the template"),
         )
         .arg(
             Arg::new("project")
                 .required_unless_present_any(OTHER_OPERATIONS)
                 .value_parser(clap::builder::NonEmptyStringValueParser::new())
+                .action(clap::ArgAction::Set)
                 .help("The name of the project to create/open"),
         )
         .arg(
             Arg::new("custom-args")
-                .multiple_values(true)
+                .num_args(..)
+                .action(clap::ArgAction::Set)
                 .help("Extra arguments for the custom commands in the template")
                 .long_help(
                     "Extra arguments for the custom commands in the template. \
@@ -44,17 +47,17 @@ pub fn cmd() -> Command<'static> {
         .arg(
             Arg::new("config")
                 .env("QK_CONFIG_PATH")
-                .takes_value(true)
                 .value_parser(clap::builder::NonEmptyStringValueParser::new())
                 .short('c')
                 .long("config")
+                .action(clap::ArgAction::Set)
                 .help("Specify alternative configuration file"),
         )
         .arg(
             Arg::new("editor")
-                .takes_value(true)
                 .short('e')
                 .long("editor")
+                .action(clap::ArgAction::Set)
                 .help("Editor to open in this project's directory")
                 .long_help(
                     "Editor to open in this project's directory. \
@@ -69,9 +72,9 @@ pub fn cmd() -> Command<'static> {
         .arg(
             Arg::new("overwrite")
                 .long("overwrite")
+                .action(clap::ArgAction::SetTrue)
                 .help("Overwrite the project if it already exists")
-                .long_help("Overwrite the project if it already exists instead of just opening it")
-                .action(clap::ArgAction::SetTrue),
+                .long_help("Overwrite the project if it already exists instead of just opening it"),
         )
         .arg(
             Arg::new("no-create-projects-dir")

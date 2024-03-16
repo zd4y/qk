@@ -13,18 +13,16 @@ fn test_list_projects_short_flag_missing_template_arg() {
         .stdout("")
         .stderr(
             "\
-error: The following required arguments were not provided:
-    <template>
+error: the following required arguments were not provided:
+  <template>
 
-USAGE:
-    qk [OPTIONS] <template> <project> [custom-args]...
+Usage: qk [OPTIONS] <template> <project> [custom-args]...
     qk [OPTIONS] -L <template>
     qk [OPTIONS] -T
     qk --help
     qk --version
 
-
-For more information try --help
+For more information, try '--help'.
 ",
         );
 }

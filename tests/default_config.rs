@@ -15,17 +15,17 @@ fn test_create_default_config() {
         .stderr("");
 
     temp.child(".config").child("qk").child("qk.toml").assert(
-        "\
-editor = 'vi'
-shell = 'sh'
+        "editor = \"vi\"
+shell = \"sh\"
+
 [templates.example]
-projects_dir = '/path/to/example/'
-editor = 'code'
-shell = 'bash'
+projects_dir = \"/path/to/example/\"
+editor = \"code\"
+shell = \"bash\"
 commands = [
-    'echo hello',
-    'echo $PWD',
-    'echo $QK_PROJECT_NAME',
+    \"echo hello\",
+    \"echo $PWD\",
+    \"echo $QK_PROJECT_NAME\",
 ]
 ",
     );

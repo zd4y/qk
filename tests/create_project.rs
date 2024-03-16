@@ -186,13 +186,12 @@ fn test_create_project_custom_args_positional_required_missing() {
         .stdout("")
         .stderr(
             "\
-error: The following required arguments were not provided:
-    <text>
+error: the following required arguments were not provided:
+  <text>
 
-USAGE:
-     <filename> <text>
+Usage: <filename> <text>
 
-For more information try --help
+For more information, try '--help'.
 ",
         );
 }
@@ -396,9 +395,9 @@ fn test_create_project_custom_args_positional_empty_values_not_allowed() {
         .stdout("")
         .stderr(
             "\
-error: The argument '<lastname>' requires a value but none was supplied
+error: a value is required for '<lastname>' but none was supplied
 
-For more information try --help
+For more information, try '--help'.
 ",
         );
 }
@@ -476,13 +475,12 @@ fn test_create_project_custom_args_option_required_missing() {
         .failure()
         .stderr(
             "\
-error: The following required arguments were not provided:
-    --string <string>
+error: the following required arguments were not provided:
+  --string <string>
 
-USAGE:
-    --string <string>
+Usage: --string <string>
 
-For more information try --help
+For more information, try '--help'.
 ",
         )
         .stdout("");

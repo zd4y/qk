@@ -18,7 +18,8 @@ impl Unit {
             .iter()
             .filter_map(|arg| match arg {
                 Unit::Positional(unit) => {
-                    let mut arg = clap::Arg::new(&*unit.name)
+                    let mut arg = clap::Arg::new(&unit.name)
+                        .action(clap::ArgAction::Set)
                         .required(unit.required)
                         .index(unit.index);
                     if !unit.allow_empty_values {
@@ -27,8 +28,8 @@ impl Unit {
                     Some(arg)
                 }
                 Unit::Option(unit) => {
-                    let mut arg = clap::Arg::new(&*unit.name)
-                        .takes_value(true)
+                    let mut arg = clap::Arg::new(&unit.name)
+                        .action(clap::ArgAction::Set)
                         .required(unit.required);
                     if !unit.allow_empty_values {
                         arg = arg.value_parser(clap::builder::NonEmptyStringValueParser::new())
@@ -42,7 +43,7 @@ impl Unit {
                     Some(arg)
                 }
                 Unit::Flag(unit) => {
-                    let mut arg = clap::Arg::new(&*unit.name).action(clap::ArgAction::SetTrue);
+                    let mut arg = clap::Arg::new(&unit.name).action(clap::ArgAction::SetTrue);
                     if let Some(long) = &unit.long {
                         arg = arg.long(long);
                     }
