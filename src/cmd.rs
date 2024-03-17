@@ -10,7 +10,7 @@ const USAGE: &str = "\
 
 const MAIN_OPERATION: &[&str; 4] = &["project", "custom-args", "editor", "overwrite"];
 const OTHER_OPERATIONS: &[&str; 2] = &["list-projects", "list-templates"];
-const COMMANDS_HEADING: &str = "COMMANDS";
+const COMMANDS_HEADING: &str = "Commands";
 
 pub fn cmd() -> Command {
     Command::new(crate_name!())
