@@ -4,7 +4,7 @@ use anyhow::{bail, Context, Result};
 
 use std::collections::HashSet;
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::{Command, ExitStatus};
 
 #[derive(Debug)]
@@ -62,6 +62,10 @@ impl<'a> Project<'a> {
         }
 
         self.open()
+    }
+
+    pub fn dir(&self) -> &Path {
+        &self.dir
     }
 
     /// Creates the project

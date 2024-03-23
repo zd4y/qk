@@ -86,6 +86,15 @@ pub fn cmd() -> Command {
             .long_help("When this option is set, qk will not create the template's projects_dir if it does not exist")
         )
         .arg(
+            // Inspired by yazi's --cwd-file
+            Arg::new("cwd-file")
+            .long("cwd-file")
+            .conflicts_with("list-projects")
+            .conflicts_with("list-templates")
+            .action(clap::ArgAction::Set)
+            .help("Write the cwd on exit to this file")
+        )
+        .arg(
             Arg::new("list-projects")
                 .short('L')
                 .long("list-projects")

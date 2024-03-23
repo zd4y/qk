@@ -95,17 +95,24 @@ fn handle_main_operation(config: &Config, matches: &ArgMatches) -> Result<()> {
     let shell = utils::get_shell(config, &template);
     let overwrite = *matches.get_one::<bool>("overwrite").unwrap();
 
-    if !matches.get_one::<bool>("no-create-projects-dir").unwrap() {
+    if !matches.get_flag("no-create-projects-dir") {
         fs::create_dir_all(template.projects_dir())?;
     }
 
-    Project::new(
+    let mut project = Project::new(
         &template,
         project_name,
         custom_args,
         editor,
         shell,
         overwrite,
-    )
-    .open_or_create()
+    );
+
+    project.open_or_create()?;
+
+    if let Some(path) = matches.get_one::<String>("cwd-file") {
+        std::fs::write(path, project.dir().to_string_lossy().as_ref())?;
+    }
+
+    Ok(())
 }
