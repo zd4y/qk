@@ -92,7 +92,7 @@ pub fn cmd() -> Command {
             .conflicts_with("list-projects")
             .conflicts_with("list-templates")
             .action(clap::ArgAction::Set)
-            .help("Write the cwd on exit to this file")
+            .help("Write the project's directory on exit to this file")
         )
         .arg(
             Arg::new("list-projects")
