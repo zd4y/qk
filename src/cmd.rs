@@ -89,8 +89,6 @@ pub fn cmd() -> Command {
             // Inspired by yazi's --cwd-file
             Arg::new("cwd-file")
             .long("cwd-file")
-            .conflicts_with("list-projects")
-            .conflicts_with("list-templates")
             .action(clap::ArgAction::Set)
             .help("Write the project's directory on exit to this file")
         )
