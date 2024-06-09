@@ -8,7 +8,7 @@ const USAGE: &str = "\
     qk --version
 ";
 
-const MAIN_OPERATION: &[&str; 4] = &["project", "custom-args", "editor", "overwrite"];
+const MAIN_OPERATION: &[&str; 3] = &["project", "custom-args", "overwrite"];
 const OTHER_OPERATIONS: &[&str; 2] = &["list-projects", "list-templates"];
 const COMMANDS_HEADING: &str = "Commands";
 
