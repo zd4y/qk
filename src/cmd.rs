@@ -125,7 +125,7 @@ pub fn cmd() -> Command {
                 .requires("template")
                 .action(clap::ArgAction::SetTrue)
                 .help_heading(COMMANDS_HEADING)
-                .help("Show the editor that would open for this template, if any. Ignores arguments other than <template> without error"),
+                .help("Show the editor that would open for this template, if any. Ignores arguments other than <template> and --editor without error"),
         )
 }
 
