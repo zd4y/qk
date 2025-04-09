@@ -38,6 +38,10 @@ fn run() -> Result<()> {
         return handle_list_projects(&config, &matches);
     }
 
+    if *matches.get_one::<bool>("show-editor").unwrap() {
+        return handle_show_editor(&config, &matches);
+    }
+
     handle_main_operation(&config, &matches)
 }
 
@@ -73,6 +77,22 @@ fn handle_list_templates(config: &Config) -> Result<()> {
         bail!("no templates yet")
     } else {
         println!("{}", templates.join("\n"));
+    }
+
+    Ok(())
+}
+
+/// Prints the editor that would open for a template, if any
+fn handle_show_editor(config: &Config, matches: &ArgMatches) -> Result<()> {
+    let template = matches.get_one::<String>("template").unwrap();
+    let template = config
+        .find_template(template)
+        .context("template not found")?;
+
+    let editor = utils::get_editor(config, &template, matches);
+
+    if let Some(editor) = editor {
+        println!("{editor}");
     }
 
     Ok(())

@@ -4,10 +4,10 @@ use assert_cmd::Command;
 use assert_fs::prelude::*;
 
 #[test]
-fn test_list_projects_short_flag_missing_template_arg() {
+fn test_show_editor_short_flag_missing_template_arg() {
     Command::cargo_bin("qk")
         .unwrap()
-        .arg("-L")
+        .arg("-E")
         .assert()
         .failure()
         .stdout("")
@@ -29,7 +29,7 @@ For more information, try '--help'.
 }
 
 #[test]
-fn test_list_projects_short_flag_no_templates() {
+fn test_show_editor_short_flag_no_templates() {
     let temp = assert_fs::TempDir::new().unwrap();
     let config_file = temp.child("qk.toml");
     config_file.touch().unwrap();
@@ -37,7 +37,7 @@ fn test_list_projects_short_flag_no_templates() {
     Command::cargo_bin("qk")
         .unwrap()
         .env("QK_CONFIG_PATH", config_file.path())
-        .arg("-L")
+        .arg("-E")
         .arg("template")
         .assert()
         .failure()
@@ -46,7 +46,7 @@ fn test_list_projects_short_flag_no_templates() {
 }
 
 #[test]
-fn test_list_projects_long_flag_no_templates() {
+fn test_show_editor_long_flag_no_templates() {
     let temp = assert_fs::TempDir::new().unwrap();
     let config_file = temp.child("qk.toml");
     config_file.touch().unwrap();
@@ -54,7 +54,7 @@ fn test_list_projects_long_flag_no_templates() {
     Command::cargo_bin("qk")
         .unwrap()
         .env("QK_CONFIG_PATH", config_file.path())
-        .arg("--list-projects")
+        .arg("--show-editor")
         .arg("template")
         .assert()
         .failure()
@@ -63,110 +63,82 @@ fn test_list_projects_long_flag_no_templates() {
 }
 
 #[test]
-fn test_list_projects_short_flag_some_templates_dont_exist() {
-    let temp = assert_fs::TempDir::new().unwrap();
-    let config_file = temp.child("qk.toml");
-    let config_path = config_file.path();
-    fs::write(
-        config_path,
-        "\
-        [templates]
-        example = '/path/to/example'
-
-        [templates.example2]
-        projects_dir = '/example2/projects/'
-        editor = ''
-        ",
-    )
-    .unwrap();
-    Command::cargo_bin("qk")
-        .unwrap()
-        .env("QK_CONFIG_PATH", config_path)
-        .arg("-L")
-        .arg("example")
-        .assert()
-        .failure()
-        .stdout("")
-        .stderr(
-            "\
-error: failed reading the project dir
-
-Caused by:
-    No such file or directory (os error 2)
-",
-        );
-}
-
-#[test]
-fn test_list_projects_short_flag_some_templates_empty() {
+fn test_show_editor_short_flag_with_editor_in_template() {
     let temp = assert_fs::TempDir::new().unwrap();
     let config_file = temp.child("qk.toml");
     let config_path = config_file.path();
 
-    let projects_dir = temp.child("projects");
-    projects_dir.create_dir_all().unwrap();
-    let projects_dir_path = projects_dir.path();
-
     fs::write(
         config_path,
-        format!(
             "\
         [templates.example2]
-        projects_dir = '{}'
-        editor = ''
+        projects_dir = '/path/to/example'
+        editor = 'myeditor'
         ",
-            projects_dir_path.to_string_lossy()
-        ),
     )
     .unwrap();
     Command::cargo_bin("qk")
         .unwrap()
         .env("QK_CONFIG_PATH", config_path)
-        .arg("-L")
-        .arg("example2")
-        .assert()
-        .failure()
-        .stdout("")
-        .stderr("error: no projects yet\n");
-}
-
-#[test]
-fn test_list_projects_short_flag_some_templates() {
-    let temp = assert_fs::TempDir::new().unwrap();
-    let config_file = temp.child("qk.toml");
-    let config_path = config_file.path();
-
-    let projects_dir = temp.child("projects");
-    projects_dir
-        .child("one")
-        .child("hello.txt")
-        .touch()
-        .unwrap();
-    projects_dir.child("two").create_dir_all().unwrap();
-    let projects_dir_path = projects_dir.path();
-
-    fs::write(
-        config_path,
-        format!(
-            "\
-        [templates]
-        example2 = '{}'
-
-        [templates.example]
-        projects_dir = '/path/to/example/'
-        commands = []
-        ",
-            projects_dir_path.to_string_lossy()
-        ),
-    )
-    .unwrap();
-    Command::cargo_bin("qk")
-        .unwrap()
-        .env("QK_CONFIG_PATH", config_path)
-        .arg("-L")
+        .arg("-E")
         .arg("example2")
         .assert()
         .success()
-        .stdout("one\ntwo\n")
+        .stdout("myeditor\n")
+        .stderr("");
+}
+
+#[test]
+fn test_show_editor_short_flag_with_editor_in_template_empty() {
+    let temp = assert_fs::TempDir::new().unwrap();
+    let config_file = temp.child("qk.toml");
+    let config_path = config_file.path();
+
+    fs::write(
+        config_path,
+            "\
+        editor = 'echo'
+
+        [templates.example2]
+        projects_dir = '/path/to/example'
+        editor = ''
+        ",
+    )
+    .unwrap();
+    Command::cargo_bin("qk")
+        .unwrap()
+        .env("QK_CONFIG_PATH", config_path)
+        .arg("-E")
+        .arg("example2")
+        .assert()
+        .success()
+        .stdout("")
+        .stderr("");
+}
+
+#[test]
+fn test_show_editor_short_flag_with_global_editor() {
+    let temp = assert_fs::TempDir::new().unwrap();
+    let config_file = temp.child("qk.toml");
+    let config_path = config_file.path();
+
+    fs::write(
+        config_path,
+            "\
+        editor = 'echo'
+
+        [templates.example2]
+        projects_dir = '/path/to/example'
+        ",
+    )
+    .unwrap();
+    Command::cargo_bin("qk")
+        .unwrap()
+        .env("QK_CONFIG_PATH", config_path)
+        .arg("-E")
+        .arg("example2")
+        .assert()
+        .success()
+        .stdout("echo\n")
         .stderr("");
 }

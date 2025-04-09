@@ -3,13 +3,14 @@ use clap::{crate_name, crate_version, Arg, Command};
 const USAGE: &str = "\
     qk [OPTIONS] <template> <project> [custom-args]...
     qk [OPTIONS] -L <template>
+    qk [OPTIONS] -E <template>
     qk [OPTIONS] -T
     qk --help
     qk --version
 ";
 
 const MAIN_OPERATION: &[&str; 3] = &["project", "custom-args", "overwrite"];
-const OTHER_OPERATIONS: &[&str; 2] = &["list-projects", "list-templates"];
+const OTHER_OPERATIONS: &[&str; 3] = &["list-projects", "list-templates", "show-editor"];
 const COMMANDS_HEADING: &str = "Commands";
 
 pub fn cmd() -> Command {
@@ -79,8 +80,7 @@ pub fn cmd() -> Command {
         .arg(
             Arg::new("no-create-projects-dir")
             .long("no-create-projects-dir")
-            .conflicts_with("list-projects")
-            .conflicts_with("list-templates")
+            .conflicts_with_all(OTHER_OPERATIONS)
             .action(clap::ArgAction::SetTrue)
             .help("Don't create project_dir automatically")
             .long_help("When this option is set, qk will not create the template's projects_dir if it does not exist")
@@ -98,6 +98,7 @@ pub fn cmd() -> Command {
                 .long("list-projects")
                 .conflicts_with_all(MAIN_OPERATION)
                 .conflicts_with("list-templates")
+                .conflicts_with("show-editor")
                 .requires("template")
                 .action(clap::ArgAction::SetTrue)
                 .help_heading(COMMANDS_HEADING)
@@ -110,9 +111,22 @@ pub fn cmd() -> Command {
                 .conflicts_with("template")
                 .conflicts_with_all(MAIN_OPERATION)
                 .conflicts_with("list-projects")
+                .conflicts_with("show-editor")
                 .action(clap::ArgAction::SetTrue)
                 .help_heading(COMMANDS_HEADING)
                 .help("List templates in config"),
+        )
+        .arg(
+            Arg::new("show-editor")
+                .short('E')
+                .long("show-editor")
+                .conflicts_with_all(MAIN_OPERATION)
+                .conflicts_with("list-templates")
+                .conflicts_with("list-projects")
+                .requires("template")
+                .action(clap::ArgAction::SetTrue)
+                .help_heading(COMMANDS_HEADING)
+                .help("Show the editor that would open for this template, if any"),
         )
 }
 
