@@ -120,13 +120,12 @@ pub fn cmd() -> Command {
             Arg::new("show-editor")
                 .short('E')
                 .long("show-editor")
-                .conflicts_with_all(MAIN_OPERATION)
                 .conflicts_with("list-templates")
                 .conflicts_with("list-projects")
                 .requires("template")
                 .action(clap::ArgAction::SetTrue)
                 .help_heading(COMMANDS_HEADING)
-                .help("Show the editor that would open for this template, if any"),
+                .help("Show the editor that would open for this template, if any. Ignores arguments other than <template> without error"),
         )
 }
 
