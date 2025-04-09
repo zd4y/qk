@@ -70,7 +70,7 @@ fn test_show_editor_short_flag_with_editor_in_template() {
 
     fs::write(
         config_path,
-            "\
+        "\
         [templates.example2]
         projects_dir = '/path/to/example'
         editor = 'myeditor'
@@ -96,7 +96,7 @@ fn test_show_editor_short_flag_with_editor_in_template_empty() {
 
     fs::write(
         config_path,
-            "\
+        "\
         editor = 'echo'
 
         [templates.example2]
@@ -124,7 +124,7 @@ fn test_show_editor_short_flag_with_global_editor() {
 
     fs::write(
         config_path,
-            "\
+        "\
         editor = 'echo'
 
         [templates.example2]
